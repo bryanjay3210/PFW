@@ -1,0 +1,32 @@
+<mat-dialog-content class="flex flex-col">
+  <div class="flex items-center" mat-dialog-title>
+    <h2 class="headline m-0 flex-auto">Select Email</h2>
+    <button class="text-secondary" mat-dialog-close mat-icon-button type="button">
+      <mat-icon svgIcon="mat:close"></mat-icon>
+    </button>
+  </div>
+
+  <mat-divider class="-mx-6 text-border"></mat-divider>
+
+  <div class="flex-parent">
+    <div style="width: 300px; text-align: center; outline: thin solid; font-size: large; font-weight: bold;">CONTACT NAME</div>
+    <div style="width: 200px; text-align: center; outline: thin solid; font-size: large; font-weight: bold;">PHONE NUMBER</div>
+    <div style="width: 300px; text-align: center; outline: thin solid; font-size: large; font-weight: bold;">EMAIL</div>
+    <div style="width: 100px; text-align: center; outline: thin solid; font-size: large; font-weight: bold;">ACTION</div>
+  </div>
+  <div class="flex-parent">
+    <input style="width: 300px; text-align: left; outline: thin solid; font-size: large;" type="text" #inputName>
+    <input style="width: 200px; text-align: left; outline: thin solid; font-size: large;" type="text" #inputPhone>
+    <input style="width: 300px; text-align: left; outline: thin solid; font-size: large;" type="text" #inputEmail>
+    <div style="width: 100px; text-align: center; outline: thin solid; font-size: large; cursor: pointer;" (click)="setManualContact(inputName.value, inputPhone.value, inputEmail.value)">ADD</div>
+  </div>
+  <div class="flex-parent" *ngFor="let contact of contactList" scope="row" (click)="rowClicked(contact)">
+    <div style="width: 300px; text-align: left; outline: thin solid; font-size: large; cursor: pointer; padding-left: 5px;">{{ contact.contactName }}</div>
+    <div style="width: 200px; text-align: center; outline: thin solid; font-size: large; cursor: pointer;">{{ contact.phoneNumber }}</div>
+    <div style="width: 300px; text-align: left; outline: thin solid; font-size: large; cursor: pointer; padding-left: 5px;">{{ contact.email }}</div>
+    <div style="width: 100px; text-align: center; outline: thin solid; font-size: large; cursor: pointer;">SELECT</div>
+  </div>
+  <br>
+  <br>
+  <mat-divider class="-mx-6 text-border"></mat-divider>
+</mat-dialog-content>

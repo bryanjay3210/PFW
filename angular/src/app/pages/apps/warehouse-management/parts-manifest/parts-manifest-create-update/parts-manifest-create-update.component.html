@@ -1,0 +1,200 @@
+<form [formGroup]="form">
+  <div class="flex items-center" mat-dialog-title>
+    <img [src]="imageDefault" class="avatar-sq mr-5">
+    <h2 *ngIf="defaults.partsManifestNumber" class="headline m-0 flex-auto">Parts Manifest: {{ defaults.partsManifestNumber }}</h2>
+    <h2 *ngIf="!defaults.partsManifestNumber" class="headline m-0 flex-auto">New Parts Manifest</h2>
+
+    <button [matMenuTriggerFor]="settingsMenu" class="text-secondary" mat-icon-button type="button">
+      <mat-icon svgIcon="mat:more_vert"></mat-icon>
+    </button>
+    <button class="text-secondary" mat-dialog-close mat-icon-button type="button">
+      <mat-icon svgIcon="mat:close"></mat-icon>
+    </button>
+  </div>
+
+  <mat-divider class="-mx-6 text-border"></mat-divider>
+  <mat-dialog-content class="flex flex-col" style="height: 1500px !important;">
+    <div *ngIf="isCreateMode()">
+      <!-- <div class="card overflow-auto -mt-16"> -->
+      <div class="bg-app-bar px-6 h-16 border-b sticky left-0 flex items-center">
+        <h2 class="title my-0 ltr:pr-4 rtl:pl-4 ltr:mr-4 rtl:ml-4 ltr:border-r rtl:border-l hidden sm:block flex-none">
+          <span>Parts Manifest</span>
+        </h2>
+        <span class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+          <mat-icon class="icon-sm text-secondary" svgIcon="mat:location_on"></mat-icon>
+          <mat-select #purpose [formControl]="purposeCtrl" aria-required="true"
+            class="px-4 py-2 border-0 outline-none w-full bg-transparent" placeholder="Select Purpose..."
+            (selectionChange)="purposeSelectionChange($event)">
+            <mat-option *ngFor="let e of purposeList" [value]="e.id">{{ e.name }} </mat-option>
+          </mat-select>
+        </span>
+        <span *ngIf="purposeCtrl.value === '2'" class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+          <mat-icon class="icon-sm text-secondary" svgIcon="mat:location_on"></mat-icon>
+          <mat-select #vendor [formControl]="vendorCtrl" aria-required="true"
+            class="px-4 py-2 border-0 outline-none w-full bg-transparent" placeholder="Select Vendor..."
+            (selectionChange)="vendorSelectionChange($event)">
+            <mat-option *ngFor="let e of vendorList" [value]="e.id">{{ e.vendorCode }} </mat-option>
+          </mat-select>
+        </span>
+        <div
+          class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+          <mat-icon class="icon-sm text-secondary" svgIcon="mat:find_replace"></mat-icon>
+          <input #driver [formControl]="driverCtrl" class="px-4 py-2 border-0 outline-none w-full bg-transparent"
+            placeholder="Enter/Scan Driver Number..." type="search" (keyup.enter)="searchDriver()">
+        </div>
+        <div
+          class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+          <mat-icon class="icon-sm text-secondary" svgIcon="mat:find_replace"></mat-icon>
+          <input #product [formControl]="productCtrl" class="px-4 py-2 border-0 outline-none w-full bg-transparent"
+            placeholder="Enter/Scan Part Number.." type="search" (keyup.enter)="searchProduct()">
+        </div>
+        <span class="flex-1"></span>
+        <button *ngIf="access === userPermission.FullAccess" (click)="clearOrders()" class="ml-4 flex-none"
+          color="primary" mat-mini-fab matTooltip="Clear" type="button">
+          <mat-icon svgIcon="mat:clear"></mat-icon>
+        </button>
+      </div>
+      <!---------------------------------------------------------------------------------------------------------------->
+      <table @stagger [dataSource]="dataSource" class="w-full" mat-table matSort>
+        <!-- Action Column -->
+        <ng-container matColumnDef="actions" style="width: 25px;">
+          <th *matHeaderCellDef mat-header-cell mat-sort-header style="width: 25px;">ACTION</th>
+            <td *matCellDef="let row" class="w-10 text-secondary" mat-cell style="width: 25px;" align="center">
+              <button *ngIf="access === userPermission.FullAccess" type="button" (click)="deleteOrder($event, row)">
+                <mat-icon svgIcon="mat:delete" matTooltip="Delete Order Detail"></mat-icon>
+              </button>
+            </td>
+        </ng-container>
+
+        <!-- Text Columns -->
+        <ng-container *ngFor="let column of columns; trackBy: trackByProperty">
+          <ng-container *ngIf="column.type === 'text'" [matColumnDef]="column.property">
+            <th *matHeaderCellDef class="uppercase" mat-header-cell mat-sort-header> {{ column.label }}</th>
+            <div *ngIf="column.property === 'createdDate' || column.property === 'orderDate'; else isNotDate">
+              <td *matCellDef="let row" mat-cell>
+                <ng-container>{{ formatDate(row[column.property]) }} </ng-container>
+              </td>
+            </div>
+            <ng-template #isNotDate>
+              <div
+                *ngIf="column.property === 'partDescription' || column.property === 'customerName'; else isNotOverflow">
+                <td *matCellDef="let row" mat-cell class="overflow-wrap">
+                  <ng-container>{{ row[column.property] }} </ng-container>
+                </td>
+              </div>
+              <ng-template #isNotOverflow>
+                <td *matCellDef="let row" mat-cell>
+                  <ng-container>{{ row[column.property] }} </ng-container>
+                </td>
+              </ng-template>
+            </ng-template>
+          </ng-container>
+        </ng-container>
+
+        <!-- Number Columns -->
+        <ng-container *ngFor="let column of columns; trackBy: trackByProperty">
+          <ng-container *ngIf="column.type === 'number'" [matColumnDef]="column.property">
+            <th *matHeaderCellDef class="uppercase" mat-header-cell mat-sort-header> {{ column.label }}</th>
+            <td *matCellDef="let row" mat-cell align="center">
+              <ng-container>{{ formatCurrency(row[column.property]) }} </ng-container>
+            </td>
+          </ng-container>
+        </ng-container>
+
+        <tr *matHeaderRowDef="visibleColumns" mat-header-row></tr>
+        <tr *matRowDef="let row; columns: visibleColumns;" @fadeInUp class="hover:bg-hover trans-ease-out cursor-pointer" mat-row></tr>
+      </table>
+      <!---------------------------------------------------------------------------------------------------------------->
+    </div>
+    <div *ngIf="isUpdateMode()">
+      <!---------------------------------------------------------------------------------------------------------------------------------------------------------------->
+      <table @stagger [dataSource]="dataSource" class="w-full" mat-table matSort>
+        <!-- Action Column -->
+        <ng-container *ngIf="isUpdateMode()" matColumnDef="actions">
+          <th *matHeaderCellDef mat-header-cell mat-sort-header>ACTION</th>
+          <td *matCellDef="let row" class="w-10 text-secondary" mat-cell>
+            <!-- <button *ngIf="access === userPermission.FullAccess && row.statusId === 1" (click)="retry($event, row)"
+              style="margin-left: 5px;">
+              <mat-icon svgIcon="mat:autorenew" matTooltip="Retry"></mat-icon>
+            </button> -->
+            <button *ngIf="access === userPermission.FullAccess" (click)="deletePartsManifestDetail($event, row)"
+              style="margin-left: 5px;">
+              <mat-icon svgIcon="mat:delete"></mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <!-- Checkbox Column -->
+        <ng-container matColumnDef="checkbox">
+          <th *matHeaderCellDef mat-header-cell>
+            <mat-checkbox (change)="$event ? masterToggle() : null" [checked]="selection.hasValue() && isAllSelected()"
+              [indeterminate]="selection.hasValue() && !isAllSelected()" color="primary">
+            </mat-checkbox>
+          </th>
+          <td *matCellDef="let row" class="w-4" mat-cell>
+            <mat-checkbox (change)="$event ? selection.toggle(row) : null" (click)="$event.stopPropagation()"
+              [checked]="selection.isSelected(row)" color="primary">
+            </mat-checkbox>
+          </td>
+        </ng-container>
+
+        <!-- Text Columns -->
+        <ng-container *ngFor="let column of columns; trackBy: trackByProperty">
+          <ng-container *ngIf="column.type === 'text'" [matColumnDef]="column.property">
+            <th *matHeaderCellDef class="uppercase" mat-header-cell mat-sort-header> {{ column.label }}</th>
+            <div *ngIf="column.property === 'shipAddressName'; else isNotOverflow">
+              <td *matCellDef="let row" mat-cell class="overflow-wrap">
+                <ng-container>{{ row[column.property] }} </ng-container>
+              </td>
+            </div>
+            <ng-template #isNotOverflow>
+              <td *matCellDef="let row" mat-cell>
+                <ng-container>{{ row[column.property] }} </ng-container>
+              </td>
+            </ng-template>
+          </ng-container>
+        </ng-container>
+
+        <!-- Number Columns -->
+        <ng-container *ngFor="let column of columns; trackBy: trackByProperty">
+          <ng-container *ngIf="column.type === 'number'" [matColumnDef]="column.property">
+            <th *matHeaderCellDef class="uppercase" mat-header-cell mat-sort-header> {{ column.label }}</th>
+              <td *matCellDef="let row" mat-cell align="center">
+                <ng-container>{{ formatCurrency(row[column.property]) }} </ng-container>
+              </td>
+          </ng-container>
+        </ng-container>
+
+        <tr *matHeaderRowDef="visibleColumns" mat-header-row></tr>
+        <tr (click)="selectPartsManifestDetail(row)" *matRowDef="let row; columns: visibleColumns;" @fadeInUp
+          class="hover:bg-hover trans-ease-out cursor-pointer" mat-row></tr>
+      </table>
+    </div>
+
+
+    <!---------------------------------------------------------------------------------------------------------------------------------------------------------------->
+  </mat-dialog-content>
+</form>
+
+<mat-divider class="-mx-6 text-border"></mat-divider>
+
+<mat-dialog-actions *ngIf="access === userPermission.FullAccess" align="end">
+  <button mat-button mat-dialog-close type="button">Cancel</button>
+  <button *ngIf="isCreateMode()" [disabled]="this.dataSource.data.length === 0" color="primary" mat-flat-button (click)="save()">Create Parts Manifest</button>
+  <!-- <button *ngIf="isUpdateMode()" color="primary" mat-flat-button (click)="save()">Update Parts Manifest</button> -->
+</mat-dialog-actions>
+
+<mat-menu #settingsMenu="matMenu" xPosition="before" yPosition="below">
+  <button mat-menu-item>
+    <mat-icon svgIcon="mat:print"></mat-icon>
+    <span>Print</span>
+  </button>
+  <button mat-menu-item>
+    <mat-icon svgIcon="mat:download"></mat-icon>
+    <span>Export</span>
+  </button>
+  <button mat-menu-item>
+    <mat-icon svgIcon="mat:delete"></mat-icon>
+    <span>Delete</span>
+  </button>
+</mat-menu>

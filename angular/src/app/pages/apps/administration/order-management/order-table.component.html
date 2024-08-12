@@ -1,0 +1,1007 @@
+<div id="section-table">
+  <mat-tab-group (selectedTabChange)="onTabChanged($event)">
+    <!-- Orders Tab -->
+    <mat-tab label="Orders">
+      <vex-page-layout style="margin-top: -35px;">
+        <!-- <vex-page-layout-header class="pb-16 flex flex-col items-start justify-center">
+      </vex-page-layout-header> -->
+        <vex-page-layout-header class="pb-16 flex flex-col items-start justify-center">
+          <div [class.container]="layoutCtrl.value === 'boxed'" [class.px-gutter]="layoutCtrl.value === 'fullwidth'"
+            class="w-full flex flex-col sm:flex-row justify-between">
+            <div>
+              <!-- <h1 class="title mt-0 mb-1">Orders</h1> -->
+              <vex-breadcrumbs [crumbs]="['Menu Tab Module', 'Administration',  'Orders']"></vex-breadcrumbs>
+            </div>
+          </div>
+        </vex-page-layout-header>
+
+        <vex-page-layout-content style="margin-top: -60px;" [class.container]="layoutCtrl.value === 'boxed'"
+          [class.px-gutter]="layoutCtrl.value === 'fullwidth'" class="-mt-6">
+          <div class="card overflow-auto -mt-16">
+            <div class="bg-app-bar px-6 h-16 border-b sticky left-0 flex items-center">
+              <h2 class="title my-0 ltr:pr-4 rtl:pl-4 ltr:mr-4 rtl:ml-4 ltr:border-r rtl:border-l hidden sm:block flex-none">
+                <span *ngIf="selectionOrder.isEmpty()">Orders</span>
+                <span *ngIf="selectionOrder.hasValue()">
+                  {{ selectionOrder.selected.length }}
+                  Order<span *ngIf="selectionOrder.selected.length > 1">s</span> selected
+                </span>
+              </h2>
+
+              <div *ngIf="selectionOrder.hasValue()" class="mr-4 pr-4 border-r flex-none">
+                <button (click)="deleteOrders(selectionOrder.selected)" color="primary" mat-icon-button
+                        matTooltip="Delete selected" type="button">
+                  <mat-icon svgIcon="mat:delete"></mat-icon>
+                </button>
+
+                <button color="primary" mat-icon-button matTooltip="Archive" type="button">
+                  <mat-icon svgIcon="mat:folder"></mat-icon>
+                </button>
+              </div>
+              <div class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+                <mat-icon class="icon-sm text-secondary" svgIcon="mat:youtube_searched_for"></mat-icon>
+                <mat-select [formControl]="searchTypeCtrl" aria-required="true" class="px-4 py-2 border-0 outline-none w-full bg-transparent" placeholder="Search Type..." (selectionChange)="searchTypeChanged($event)">
+                  <mat-option *ngFor="let e of searchTypeList" [value]="e.code">{{ e.name }} </mat-option>
+                </mat-select>
+              </div>
+              <div *ngIf="isPaymentTermSelected" class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+                <mat-icon class="icon-sm text-secondary" svgIcon="mat:youtube_searched_for"></mat-icon>
+                <mat-select [formControl]="paymentTermCtrl" aria-required="true" class="px-4 py-2 border-0 outline-none w-full bg-transparent" placeholder="Select Payment Term...">
+                  <mat-option *ngFor="let e of paymentTermList" [value]="e.id">{{ e.termName }} </mat-option>
+                </mat-select>
+              </div>
+              <div *ngIf="isPaymentTermSelected" class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+                <mat-icon class="icon-sm text-secondary" svgIcon="mat:youtube_searched_for"></mat-icon>
+                <mat-select [formControl]="paymentTermFilterCtrl" aria-required="true" class="px-4 py-2 border-0 outline-none w-full bg-transparent" placeholder="Select Filter...">
+                  <mat-option *ngFor="let e of paymentTermFilterList" [value]="e.code">{{ e.name }} </mat-option>
+                </mat-select>
+              </div>
+              
+              <div *ngIf="!isPaymentTermSelected" class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+                <mat-icon class="icon-sm text-secondary" svgIcon="mat:search"></mat-icon>
+                <input [formControl]="orderSearchCtrl" class="px-4 py-2 border-0 outline-none w-full bg-transparent"
+                       placeholder="Search..." type="search" (keyup.enter)="searchOrders()">
+              </div>
+              <span *ngIf="(orderSearchCtrl.value && orderSearchCtrl.value.trim().length > 0 && !fromDateCtrl.value) || (isPaymentTermSelected && !(fromDateCtrl.value || toDateCtrl.value))">
+                <button (click)="searchOrders()" class="ml-4 flex-none" color="primary" mat-mini-fab matTooltip="Search Orders"
+                  type="button">
+                  <mat-icon svgIcon="mat:search"></mat-icon>
+                </button>
+              </span>
+              <!-- <span *ngIf="!!orderSearchCtrl.value && orderSearchCtrl.value.trim().length > 0">
+                <button (click)="searchOrders()" class="ml-4 flex-none" color="primary" mat-mini-fab
+                        matTooltip="Search Orders" type="button">
+                  <mat-icon svgIcon="mat:search"></mat-icon>
+                </button>
+              </span> -->
+
+              <h2 class="title my-0 ltr:pr-4 rtl:pl-4 ltr:mr-4 rtl:ml-4 ltr:border-r rtl:border-l hidden sm:block flex-none" style="padding-left: 100px;">
+                <span>Date Filter</span>
+              </h2>
+              <div class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+                <input [matDatepicker]="datepickerRef1" [formControl]="fromDateCtrl" (dateChange)="onDateChange()" matInput required placeholder="From Date...">
+                <mat-datepicker-toggle [for]="datepickerRef1" class="block" matSuffix></mat-datepicker-toggle>
+                <mat-datepicker #datepickerRef1></mat-datepicker>
+              </div>
+              <div class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+                <input [matDatepicker]="datepickerRef2" [min]="fromDateCtrl.value" [formControl]="toDateCtrl" matInput required placeholder="To Date...">
+                <mat-datepicker-toggle [for]="datepickerRef2" class="block" matSuffix></mat-datepicker-toggle>
+                <mat-datepicker #datepickerRef2></mat-datepicker>
+              </div>
+              <span *ngIf="fromDateCtrl.value && toDateCtrl.value">
+                <button (click)="searchOrdersByDate()" class="ml-4 flex-none" color="primary" mat-mini-fab
+                        matTooltip="Search Orders" type="button">
+                  <mat-icon svgIcon="mat:search"></mat-icon>
+                </button>
+              </span>
+              <span *ngIf="fromDateCtrl.value && toDateCtrl.value">
+                <button *ngIf="access === userPermission.FullAccess" (click)="clearDateSearch()" class="ml-4 flex-none"
+                        color="primary" mat-mini-fab matTooltip="Clear" type="button">
+                  <mat-icon svgIcon="mat:clear"></mat-icon>
+                </button>
+              </span>
+
+              <span class="flex-1"></span>
+
+              <button [matMenuTriggerFor]="columnFilterMenu" class="ml-4 flex-none" mat-icon-button
+                      matTooltip="Filter Columns" type="button">
+                <mat-icon svgIcon="mat:filter_list"></mat-icon>
+              </button>
+
+              <button *ngIf="access === userPermission.FullAccess" (click)="createOrder()" class="ml-4 flex-none"
+                      color="primary" mat-mini-fab matTooltip="Add Order" type="button">
+                <mat-icon svgIcon="mat:add"></mat-icon>
+              </button>
+            </div>
+
+            <table @stagger [dataSource]="orderDataSource" class="w-full" mat-table matSort>
+
+              <!-- Action Column -->
+              <ng-container matColumnDef="actions">
+                <th *matHeaderCellDef mat-header-cell mat-sort-header>ACTION</th>
+                <td *matCellDef="let row" class="w-10 text-secondary" mat-cell>
+                  <button (click)="printOrder($event, row)" style="margin-left: -15px; padding-right: 5px;">
+                    <mat-icon svgIcon="mat:print"></mat-icon>
+                  </button>
+                  <button (click)="emailOrder($event, row)" style="margin-left: 0px; padding-right: 6px;">
+                    <mat-icon svgIcon="mat:email"></mat-icon>
+                  </button>
+                  <button (click)="updateOrderStatus($event, row)" style="margin-left: 0px; padding-right: 5px;">
+                    <mat-icon svgIcon="mat:edit"></mat-icon>
+                  </button>
+                  <button *ngIf="row.orderStatusId === 1 || row.orderStatusId === 2" (click)="updateStatus($event, row)" style="margin-left: 0px; padding-right: 5px;">
+                    <mat-icon svgIcon="mat:update"></mat-icon>
+                  </button>
+                  <button *ngIf="getOrderVoidable(row)" (click)="voidOrder($event, row)" style="margin-left: 0px;">
+                    <mat-icon svgIcon="mat:not_interested"></mat-icon>
+                  </button>
+                </td>
+              </ng-container>
+
+              <!-- Checkbox Column -->
+              <ng-container matColumnDef="checkbox">
+                <th *matHeaderCellDef mat-header-cell>
+                  <mat-checkbox (change)="$event ? masterToggleOrder() : null"
+                    [checked]="selectionOrder.hasValue() && isAllSelectedOrder()"
+                    [indeterminate]="selectionOrder.hasValue() && !isAllSelectedOrder()" color="primary">
+                  </mat-checkbox>
+                </th>
+                <td *matCellDef="let row" class="w-4" mat-cell>
+                  <mat-checkbox (change)="$event ? selectionOrder.toggle(row) : null" (click)="$event.stopPropagation()"
+                    [checked]="selectionOrder.isSelected(row)" color="primary">
+                  </mat-checkbox>
+                </td>
+              </ng-container>
+
+              <!-- Image Column -->
+              <ng-container matColumnDef="image">
+                <th *matHeaderCellDef mat-header-cell></th>
+                <td *matCellDef="let row" class="w-8 min-w-8 pr-0" mat-cell>
+                  <img [src]="imageDefault" class="avatar h-8 w-8 align-middle">
+                </td>
+              </ng-container>
+
+              <!-- Text Columns -->
+              <ng-container *ngFor="let column of orderColumns; trackBy: trackByProperty">
+                <ng-container *ngIf="column.type === 'text'" [matColumnDef]="column.property">
+                  <th *matHeaderCellDef class="uppercase" mat-header-cell mat-sort-header> {{ column.label }}</th>
+                  <div *ngIf="column.property === 'isQuote'">
+                    <td *matCellDef="let row" mat-cell>
+                      <ng-container>{{ convertIsQuote(row[column.property]) }} </ng-container>
+                    </td>
+                  </div>
+                  <div *ngIf="column.property !== 'isQuote'">
+                    <div *ngIf="column.property === 'orderDate'">
+                      <td *matCellDef="let row" mat-cell>
+                        <ng-container>{{ formatDate(row[column.property]) }} </ng-container>
+                      </td>
+                    </div>
+                    <div *ngIf="column.property !== 'orderDate'">
+                      <td *matCellDef="let row" mat-cell>
+                        <ng-container>{{ row[column.property] }} </ng-container>
+                      </td>
+                    </div>
+                  </div>
+                </ng-container>
+              </ng-container>
+
+              <!-- Number Columns -->
+              <ng-container *ngFor="let column of orderColumns; trackBy: trackByProperty">
+                <ng-container *ngIf="column.type === 'number'" [matColumnDef]="column.property">
+                  <th *matHeaderCellDef class="uppercase" mat-header-cell mat-sort-header> {{ column.label }}</th>
+                  <td *matCellDef="let row" mat-cell align="right">
+                    <ng-container>{{ formatCurrency(row[column.property]) }} </ng-container>
+                  </td>
+                </ng-container>
+              </ng-container>
+
+              <tr *matHeaderRowDef="visibleOrderColumns" mat-header-row></tr>
+              <tr (click)="updateOrder(row)" *matRowDef="let row; columns: visibleOrderColumns;" @fadeInUp
+                class="hover:bg-hover trans-ease-out cursor-pointer" mat-row></tr>
+            </table>
+
+            <mat-paginator style="height: 1px;" [pageSizeOptions]="orderPageSizeOptions" [pageSize]="orderPageSize"
+              class="sticky left-0"></mat-paginator>
+            <mat-paginator [pageSize]="orderPageSize" [pageIndex]="orderPageIndex"
+              [pageSizeOptions]="orderPageSizeOptions" class="sticky left-0" [length]="orderDataCount"
+              [showFirstLastButtons]="true" (page)="onOrderPaginatorClicked($event)"></mat-paginator>
+          </div>
+        </vex-page-layout-content>
+      </vex-page-layout>
+
+      <mat-menu #columnFilterMenu="matMenu" xPosition="before" yPosition="below">
+        <button (click)="toggleOrderColumnVisibility(column, $event)" *ngFor="let column of orderColumns"
+          class="checkbox-item mat-menu-item">
+          <mat-checkbox (click)="$event.stopPropagation()" [(ngModel)]="column.visible" color="primary">
+            {{ column.label }}
+          </mat-checkbox>
+        </button>
+      </mat-menu>
+
+      <mat-menu #actionsMenu="matMenu" xPosition="before" yPosition="below">
+        <ng-template let-order="order" matMenuContent>
+          <button (click)="printOrder($event, order)" mat-menu-item>
+            <mat-icon svgIcon="mat:print"></mat-icon>
+            <span>Print</span>
+          </button>
+          <button (click)="updateOrder(order)" mat-menu-item>
+            <mat-icon svgIcon="mat:edit"></mat-icon>
+            <span>Modify</span>
+          </button>
+          <button (click)="deleteOrder(order)" mat-menu-item>
+            <mat-icon svgIcon="mat:delete"></mat-icon>
+            <span>Delete</span>
+          </button>
+        </ng-template>
+      </mat-menu>
+    </mat-tab>
+
+    <!-- Quotes Tab -->
+    <mat-tab label="Quotes">
+      <vex-page-layout style="margin-top: -35px;">
+        <vex-page-layout-header class="pb-16 flex flex-col items-start justify-center">
+          <div [class.container]="layoutCtrl.value === 'boxed'" [class.px-gutter]="layoutCtrl.value === 'fullwidth'"
+            class="w-full flex flex-col sm:flex-row justify-between">
+            <div>
+              <vex-breadcrumbs [crumbs]="['Menu Tab Module', 'Administration',  'Quotes']"></vex-breadcrumbs>
+            </div>
+          </div>
+        </vex-page-layout-header>
+
+        <vex-page-layout-content style="margin-top: -60px;" [class.container]="layoutCtrl.value === 'boxed'"
+          [class.px-gutter]="layoutCtrl.value === 'fullwidth'" class="-mt-6">
+          <div class="card overflow-auto -mt-16">
+            <div class="bg-app-bar px-6 h-16 border-b sticky left-0 flex items-center">
+              <h2
+                class="title my-0 ltr:pr-4 rtl:pl-4 ltr:mr-4 rtl:ml-4 ltr:border-r rtl:border-l hidden sm:block flex-none">
+                <span *ngIf="selectionQuote.isEmpty()">Quotes</span>
+                <span *ngIf="selectionQuote.hasValue()">{{ selectionQuote.selected.length }}
+                  Quote<span *ngIf="selectionQuote.selected.length > 1">s</span> selected</span>
+              </h2>
+              <div *ngIf="selectionQuote.hasValue()" class="mr-4 pr-4 border-r flex-none">
+                <button (click)="deleteOrders(selectionQuote.selected)" color="primary" mat-icon-button
+                  matTooltip="Delete selected" type="button">
+                  <mat-icon svgIcon="mat:delete"></mat-icon>
+                </button>
+                <button color="primary" mat-icon-button matTooltip="Archive" type="button">
+                  <mat-icon svgIcon="mat:folder"></mat-icon>
+                </button>
+              </div>
+              <div
+                class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+                <mat-icon class="icon-sm text-secondary" svgIcon="mat:search"></mat-icon>
+                <input [formControl]="quoteSearchCtrl" class="px-4 py-2 border-0 outline-none w-full bg-transparent"
+                  placeholder="Search..." type="search" (keyup.enter)="searchQuotes()">
+              </div>
+              <span *ngIf="!!quoteSearchCtrl.value && quoteSearchCtrl.value.trim().length > 0">
+                <button (click)="searchQuotes()" class="ml-4 flex-none" color="primary" mat-mini-fab
+                  matTooltip="Search Quotes" type="button">
+                  <mat-icon svgIcon="mat:search"></mat-icon>
+                </button>
+              </span>
+              <span class="flex-1"></span>
+            </div>
+
+            <table @stagger [dataSource]="quoteDataSource" class="w-full" mat-table matSort>
+              <!-- Action Column -->
+              <ng-container matColumnDef="actions">
+                <th *matHeaderCellDef mat-header-cell mat-sort-header>ACTION</th>
+                <td *matCellDef="let row" class="w-10 text-secondary" mat-cell>
+                  <button (click)="printOrder($event, row)" style="margin-left: -5px; margin-right: 5px;">
+                    <mat-icon svgIcon="mat:print"></mat-icon>
+                  </button>
+                  <button (click)="emailOrder($event, row)" style="margin-left: -5px; margin-right: 5px;">
+                    <mat-icon svgIcon="mat:email"></mat-icon>
+                  </button>
+                </td>
+              </ng-container>
+
+              <!-- Checkbox Column -->
+              <ng-container matColumnDef="checkbox">
+                <th *matHeaderCellDef mat-header-cell>
+                  <mat-checkbox (change)="$event ? masterToggleQuote() : null"
+                    [checked]="selectionQuote.hasValue() && isAllSelectedQuote()"
+                    [indeterminate]="selectionQuote.hasValue() && !isAllSelectedQuote()" color="primary">
+                  </mat-checkbox>
+                </th>
+                <td *matCellDef="let row" class="w-4" mat-cell>
+                  <mat-checkbox (change)="$event ? selectionQuote.toggle(row) : null" (click)="$event.stopPropagation()"
+                    [checked]="selectionQuote.isSelected(row)" color="primary">
+                  </mat-checkbox>
+                </td>
+              </ng-container>
+
+              <!-- Image Column -->
+              <ng-container matColumnDef="image">
+                <th *matHeaderCellDef mat-header-cell></th>
+                <td *matCellDef="let row" class="w-8 min-w-8 pr-0" mat-cell>
+                  <img [src]="imageDefault" class="avatar h-8 w-8 align-middle">
+                </td>
+              </ng-container>
+
+              <!-- Text Columns -->
+              <ng-container *ngFor="let column of quoteColumns; trackBy: trackByProperty">
+                <ng-container *ngIf="column.type === 'text'" [matColumnDef]="column.property">
+                  <th *matHeaderCellDef class="uppercase" mat-header-cell mat-sort-header> {{ column.label }}</th>
+                  <div *ngIf="column.property === 'isQuote'">
+                    <td *matCellDef="let row" mat-cell>
+                      <ng-container>{{ convertIsQuote(row[column.property]) }} </ng-container>
+                    </td>
+                  </div>
+                  <div *ngIf="column.property !== 'isQuote'">
+                    <div *ngIf="column.property === 'orderDate'">
+                      <td *matCellDef="let row" mat-cell>
+                        <ng-container>{{ formatDate(row[column.property]) }} </ng-container>
+                      </td>
+                    </div>
+                    <div *ngIf="column.property !== 'orderDate'">
+                      <td *matCellDef="let row" mat-cell>
+                        <ng-container>{{ row[column.property] }} </ng-container>
+                      </td>
+                    </div>
+                  </div>
+                </ng-container>
+              </ng-container>
+
+              <!-- Contact Column -->
+              <ng-container matColumnDef="contact">
+                <th *matHeaderCellDef mat-header-cell mat-sort-header></th>
+                <td *matCellDef="let row" mat-cell>
+                  <div class="flex">
+                    <a (click)="$event.stopPropagation()"
+                      class="w-8 h-8 leading-none flex items-center justify-center hover:bg-hover text-primary bg-primary/10"
+                      mat-icon-button>
+                      <mat-icon class="icon-sm" svgIcon="mat:phone"></mat-icon>
+                    </a>
+
+                    <a (click)="$event.stopPropagation()"
+                      class="w-8 h-8 leading-none flex items-center justify-center ml-1 hover:bg-hover text-teal bg-teal-light"
+                      mat-icon-button>
+                      <mat-icon class="icon-sm" svgIcon="mat:mail"></mat-icon>
+                    </a>
+
+                    <a (click)="$event.stopPropagation()"
+                      class="w-8 h-8 leading-none flex items-center justify-center ml-1 hover:bg-hover text-green bg-green-light"
+                      mat-icon-button>
+                      <mat-icon class="icon-sm" svgIcon="mat:map"></mat-icon>
+                    </a>
+                  </div>
+                </td>
+              </ng-container>
+
+              <tr *matHeaderRowDef="visibleQuoteColumns" mat-header-row></tr>
+              <tr (click)="updateOrder(row)" *matRowDef="let row; columns: visibleQuoteColumns;" @fadeInUp
+                class="hover:bg-hover trans-ease-out cursor-pointer" mat-row></tr>
+            </table>
+
+            <mat-paginator style="height: 1px;" [pageSizeOptions]="quotePageSizeOptions" [pageSize]="quotePageSize"
+              class="sticky left-0"></mat-paginator>
+            <mat-paginator [pageSize]="quotePageSize" [pageIndex]="quotePageIndex"
+              [pageSizeOptions]="quotePageSizeOptions" class="sticky left-0" [length]="quoteDataCount"
+              [showFirstLastButtons]="true" (page)="onQuotePaginatorClicked($event)"></mat-paginator>
+          </div>
+        </vex-page-layout-content>
+      </vex-page-layout>
+
+      <mat-menu #columnFilterMenu="matMenu" xPosition="before" yPosition="below">
+        <button (click)="toggleQuoteColumnVisibility(column, $event)" *ngFor="let column of quoteColumns"
+          class="checkbox-item mat-menu-item">
+          <mat-checkbox (click)="$event.stopPropagation()" [(ngModel)]="column.visible" color="primary">
+            {{ column.label }}
+          </mat-checkbox>
+        </button>
+      </mat-menu>
+
+      <mat-menu #actionsMenu="matMenu" xPosition="before" yPosition="below">
+        <ng-template let-quote="quote" matMenuContent>
+          <button (click)="printOrder($event, quote)" mat-menu-item>
+            <mat-icon svgIcon="mat:print"></mat-icon>
+            <span>Print</span>
+          </button>
+          <button (click)="updateOrder(quote)" mat-menu-item>
+            <mat-icon svgIcon="mat:edit"></mat-icon>
+            <span>Modify</span>
+          </button>
+          <button (click)="deleteOrder(quote)" mat-menu-item>
+            <mat-icon svgIcon="mat:delete"></mat-icon>
+            <span>Delete</span>
+          </button>
+        </ng-template>
+      </mat-menu>
+    </mat-tab>
+
+    <!-- Web Orders Tab -->
+    <mat-tab label="Web Orders">
+      <vex-page-layout style="margin-top: -35px;">
+        <vex-page-layout-header class="pb-16 flex flex-col items-start justify-center">
+          <div [class.container]="layoutCtrl.value === 'boxed'" [class.px-gutter]="layoutCtrl.value === 'fullwidth'"
+            class="w-full flex flex-col sm:flex-row justify-between">
+            <div>
+              <vex-breadcrumbs [crumbs]="['Menu Tab Module', 'Administration',  'Web Orders']"></vex-breadcrumbs>
+            </div>
+          </div>
+        </vex-page-layout-header>
+
+        <vex-page-layout-content style="margin-top: -60px;" [class.container]="layoutCtrl.value === 'boxed'"
+          [class.px-gutter]="layoutCtrl.value === 'fullwidth'" class="-mt-6">
+          <div class="card overflow-auto -mt-16">
+            <div class="bg-app-bar px-6 h-16 border-b sticky left-0 flex items-center">
+              <h2
+                class="title my-0 ltr:pr-4 rtl:pl-4 ltr:mr-4 rtl:ml-4 ltr:border-r rtl:border-l hidden sm:block flex-none">
+                <span *ngIf="selectionWeb.isEmpty()">Web Orders</span>
+                <span *ngIf="selectionWeb.hasValue()">{{ selectionWeb.selected.length }}
+                  Web Order<span *ngIf="selectionWeb.selected.length > 1">s</span> selected</span>
+              </h2>
+              <div *ngIf="selectionWeb.hasValue()" class="mr-4 pr-4 border-r flex-none">
+                <button (click)="deleteOrders(selectionWeb.selected)" color="primary" mat-icon-button
+                  matTooltip="Delete selected" type="button">
+                  <mat-icon svgIcon="mat:delete"></mat-icon>
+                </button>
+                <button color="primary" mat-icon-button matTooltip="Archive" type="button">
+                  <mat-icon svgIcon="mat:folder"></mat-icon>
+                </button>
+              </div>
+              <div
+                class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+                <mat-icon class="icon-sm text-secondary" svgIcon="mat:search"></mat-icon>
+                <input [formControl]="webSearchCtrl" class="px-4 py-2 border-0 outline-none w-full bg-transparent"
+                  placeholder="Search..." type="search" (keyup.enter)="searchWebOrders()">
+              </div>
+              <span *ngIf="!!webSearchCtrl.value && webSearchCtrl.value.trim().length > 0">
+                <button (click)="searchWebOrders()" class="ml-4 flex-none" color="primary" mat-mini-fab
+                  matTooltip="Search Web Orders" type="button">
+                  <mat-icon svgIcon="mat:search"></mat-icon>
+                </button>
+              </span>
+              <span class="flex-1"></span>
+            </div>
+
+            <table @stagger [dataSource]="webDataSource" class="w-full" mat-table matSort>
+              <!-- Action Column -->
+              <ng-container matColumnDef="actions">
+                <th *matHeaderCellDef mat-header-cell mat-sort-header>ACTION</th>
+                <td *matCellDef="let row" class="w-10 text-secondary" mat-cell>
+                  <button (click)="printOrder($event, row)">
+                    <mat-icon svgIcon="mat:print"></mat-icon>
+                  </button>
+                </td>
+              </ng-container>
+
+              <!-- Checkbox Column -->
+              <ng-container matColumnDef="checkbox">
+                <th *matHeaderCellDef mat-header-cell>
+                  <mat-checkbox (change)="$event ? masterToggleWeb() : null"
+                    [checked]="selectionWeb.hasValue() && isAllSelectedWeb()"
+                    [indeterminate]="selectionWeb.hasValue() && !isAllSelectedWeb()" color="primary">
+                  </mat-checkbox>
+                </th>trackByProperty
+                <td *matCellDef="let row" class="w-4" mat-cell>
+                  <mat-checkbox (change)="$event ? selectionWeb.toggle(row) : null" (click)="$event.stopPropagation()"
+                    [checked]="selectionWeb.isSelected(row)" color="primary">
+                  </mat-checkbox>
+                </td>
+              </ng-container>
+
+              <!-- Image Column -->
+              <ng-container matColumnDef="image">
+                <th *matHeaderCellDef mat-header-cell></th>
+                <td *matCellDef="let row" class="w-8 min-w-8 pr-0" mat-cell>
+                  <img [src]="imageDefault" class="avatar h-8 w-8 align-middle">
+                </td>
+              </ng-container>
+
+              <!-- Text Columns -->
+              <ng-container *ngFor="let column of webColumns; trackBy: trackByProperty">
+                <ng-container *ngIf="column.type === 'text'" [matColumnDef]="column.property">
+                  <th *matHeaderCellDef class="uppercase" mat-header-cell mat-sort-header> {{ column.label }}</th>
+                  <div *ngIf="column.property === 'isQuote'">
+                    <td *matCellDef="let row" mat-cell>
+                      <ng-container>{{ convertIsQuote(row[column.property]) }} </ng-container>
+                    </td>
+                  </div>
+                  <div *ngIf="column.property !== 'isQuote'">
+                    <div *ngIf="column.property === 'orderDate'">
+                      <td *matCellDef="let row" mat-cell>
+                        <ng-container>{{ formatDate(row[column.property]) }} </ng-container>
+                      </td>
+                    </div>
+                    <div *ngIf="column.property !== 'orderDate'">
+                      <td *matCellDef="let row" mat-cell>
+                        <ng-container>{{ row[column.property] }} </ng-container>
+                      </td>
+                    </div>
+                  </div>
+                </ng-container>
+              </ng-container>
+
+              <!-- Contact Column -->
+              <ng-container matColumnDef="contact">
+                <th *matHeaderCellDef mat-header-cell mat-sort-header></th>
+                <td *matCellDef="let row" mat-cell>
+                  <div class="flex">
+                    <a (click)="$event.stopPropagation()"
+                      class="w-8 h-8 leading-none flex items-center justify-center hover:bg-hover text-primary bg-primary/10"
+                      mat-icon-button>
+                      <mat-icon class="icon-sm" svgIcon="mat:phone"></mat-icon>
+                    </a>
+
+                    <a (click)="$event.stopPropagation()"
+                      class="w-8 h-8 leading-none flex items-center justify-center ml-1 hover:bg-hover text-teal bg-teal-light"
+                      mat-icon-button>
+                      <mat-icon class="icon-sm" svgIcon="mat:mail"></mat-icon>
+                    </a>
+
+                    <a (click)="$event.stopPropagation()"
+                      class="w-8 h-8 leading-none flex items-center justify-center ml-1 hover:bg-hover text-green bg-green-light"
+                      mat-icon-button>
+                      <mat-icon class="icon-sm" svgIcon="mat:map"></mat-icon>
+                    </a>
+                  </div>
+                </td>
+              </ng-container>
+
+              <tr *matHeaderRowDef="visibleWebColumns" mat-header-row></tr>
+              <tr (click)="updateOrder(row)" *matRowDef="let row; columns: visibleWebColumns;" @fadeInUp
+                class="hover:bg-hover trans-ease-out cursor-pointer" mat-row></tr>
+            </table>
+
+            <mat-paginator style="height: 1px;" [pageSizeOptions]="webPageSizeOptions" [pageSize]="webPageSize"
+              class="sticky left-0"></mat-paginator>
+            <mat-paginator [pageSize]="webPageSize" [pageIndex]="webPageIndex"
+              [pageSizeOptions]="webPageSizeOptions" class="sticky left-0" [length]="webDataCount"
+              [showFirstLastButtons]="true" (page)="onWebPaginatorClicked($event)"></mat-paginator>
+          </div>
+        </vex-page-layout-content>
+      </vex-page-layout>
+
+      <mat-menu #columnFilterMenu="matMenu" xPosition="before" yPosition="below">
+        <button (click)="toggleWebColumnVisibility(column, $event)" *ngFor="let column of webColumns"
+          class="checkbox-item mat-menu-item">
+          <mat-checkbox (click)="$event.stopPropagation()" [(ngModel)]="column.visible" color="primary">
+            {{ column.label }}
+          </mat-checkbox>
+        </button>
+      </mat-menu>
+
+      <mat-menu #actionsMenu="matMenu" xPosition="before" yPosition="below">
+        <ng-template let-quote="quote" matMenuContent>
+          <button (click)="printOrder($event, quote)" mat-menu-item>
+            <mat-icon svgIcon="mat:print"></mat-icon>
+            <span>Print</span>
+          </button>
+          <button (click)="updateOrder(quote)" mat-menu-item>
+            <mat-icon svgIcon="mat:edit"></mat-icon>
+            <span>Modify</span>
+          </button>
+          <button (click)="deleteOrder(quote)" mat-menu-item>
+            <mat-icon svgIcon="mat:delete"></mat-icon>
+            <span>Delete</span>
+          </button>
+        </ng-template>
+      </mat-menu>
+    </mat-tab>
+
+    <!-- RGA Orders Tab -->
+    <mat-tab label="RGA Orders">
+      <vex-page-layout style="margin-top: -35px;">
+        <vex-page-layout-header class="pb-16 flex flex-col items-start justify-center">
+          <div [class.container]="layoutCtrl.value === 'boxed'" [class.px-gutter]="layoutCtrl.value === 'fullwidth'"
+            class="w-full flex flex-col sm:flex-row justify-between">
+            <div>
+              <vex-breadcrumbs [crumbs]="['Menu Tab Module', 'Administration',  'RGA Orders']"></vex-breadcrumbs>
+            </div>
+          </div>
+        </vex-page-layout-header>
+
+        <vex-page-layout-content style="margin-top: -60px;" [class.container]="layoutCtrl.value === 'boxed'"
+          [class.px-gutter]="layoutCtrl.value === 'fullwidth'" class="-mt-6">
+          <div class="card overflow-auto -mt-16">
+            <div class="bg-app-bar px-6 h-16 border-b sticky left-0 flex items-center">
+              <h2
+                class="title my-0 ltr:pr-4 rtl:pl-4 ltr:mr-4 rtl:ml-4 ltr:border-r rtl:border-l hidden sm:block flex-none">
+                <span *ngIf="selectionRGA.isEmpty()">RGA Orders</span>
+                <span *ngIf="selectionRGA.hasValue()">{{ selectionRGA.selected.length }}
+                  RGA Order<span *ngIf="selectionRGA.selected.length > 1">s</span> selected</span>
+              </h2>
+              <div *ngIf="selectionRGA.hasValue()" class="mr-4 pr-4 border-r flex-none">
+                <button (click)="deleteOrders(selectionRGA.selected)" color="primary" mat-icon-button
+                  matTooltip="Delete selected" type="button">
+                  <mat-icon svgIcon="mat:delete"></mat-icon>
+                </button>
+                <button color="primary" mat-icon-button matTooltip="Archive" type="button">
+                  <mat-icon svgIcon="mat:folder"></mat-icon>
+                </button>
+              </div>
+              <div
+                class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+                <mat-icon class="icon-sm text-secondary" svgIcon="mat:search"></mat-icon>
+                <input [formControl]="rgaSearchCtrl" class="px-4 py-2 border-0 outline-none w-full bg-transparent"
+                  placeholder="Search..." type="search" (keyup.enter)="searchRGAOrders()">
+              </div>
+              <span *ngIf="!!rgaSearchCtrl.value && rgaSearchCtrl.value.trim().length > 0">
+                <button (click)="searchRGAOrders()" class="ml-4 flex-none" color="primary" mat-mini-fab
+                  matTooltip="Search RGA Orders" type="button">
+                  <mat-icon svgIcon="mat:search"></mat-icon>
+                </button>
+              </span>
+              <span class="flex-1"></span>
+            </div>
+
+            <table @stagger [dataSource]="rgaDataSource" class="w-full" mat-table matSort>
+              <!-- Action Column -->
+              <ng-container matColumnDef="actions">
+                <th *matHeaderCellDef mat-header-cell mat-sort-header>ACTION</th>
+                <td *matCellDef="let row" class="w-10 text-secondary" mat-cell>
+                  <button (click)="printOrder($event, row)" style="margin-left: -15px; padding-right: 5px;">
+                    <mat-icon svgIcon="mat:print"></mat-icon>
+                  </button>
+                  <button (click)="emailOrder($event, row)" style="margin-left: 0px; padding-right: 6px;">
+                    <mat-icon svgIcon="mat:email"></mat-icon>
+                  </button>
+                  <button *ngIf="getRGAOrderVoidable(row)" (click)="deleteRGAOrder($event, row)" style="margin-left: 0px;">
+                    <mat-icon svgIcon="mat:delete"></mat-icon>
+                  </button>
+                </td>
+              </ng-container>
+
+              <!-- Checkbox Column -->
+              <ng-container matColumnDef="checkbox">
+                <th *matHeaderCellDef mat-header-cell>
+                  <mat-checkbox (change)="$event ? masterToggleOrder() : null"
+                    [checked]="selectionOrder.hasValue() && isAllSelectedOrder()"
+                    [indeterminate]="selectionOrder.hasValue() && !isAllSelectedOrder()" color="primary">
+                  </mat-checkbox>
+                </th>
+                <td *matCellDef="let row" class="w-4" mat-cell>
+                  <mat-checkbox (change)="$event ? selectionOrder.toggle(row) : null" (click)="$event.stopPropagation()"
+                    [checked]="selectionOrder.isSelected(row)" color="primary">
+                  </mat-checkbox>
+                </td>
+              </ng-container>
+
+              <!-- Image Column -->
+              <ng-container matColumnDef="image">
+                <th *matHeaderCellDef mat-header-cell></th>
+                <td *matCellDef="let row" class="w-8 min-w-8 pr-0" mat-cell>
+                  <img [src]="imageDefault" class="avatar h-8 w-8 align-middle">
+                </td>
+              </ng-container>
+
+              <!-- Text Columns -->
+              <ng-container *ngFor="let column of orderColumns; trackBy: trackByProperty">
+                <ng-container *ngIf="column.type === 'text'" [matColumnDef]="column.property">
+                  <th *matHeaderCellDef class="uppercase" mat-header-cell mat-sort-header> {{ column.label }}</th>
+                  <div *ngIf="column.property === 'isQuote'">
+                    <td *matCellDef="let row" mat-cell>
+                      <ng-container>{{ convertIsQuote(row[column.property]) }} </ng-container>
+                    </td>
+                  </div>
+                  <div *ngIf="column.property !== 'isQuote'">
+                    <div *ngIf="column.property === 'orderDate'">
+                      <td *matCellDef="let row" mat-cell>
+                        <ng-container>{{ formatDate(row[column.property]) }} </ng-container>
+                      </td>
+                    </div>
+                    <div *ngIf="column.property !== 'orderDate'">
+                      <td *matCellDef="let row" mat-cell>
+                        <ng-container>{{ row[column.property] }} </ng-container>
+                      </td>
+                    </div>
+                  </div>
+                </ng-container>
+              </ng-container>
+
+              <!-- Number Columns -->
+              <ng-container *ngFor="let column of orderColumns; trackBy: trackByProperty">
+                <ng-container *ngIf="column.type === 'number'" [matColumnDef]="column.property">
+                  <th *matHeaderCellDef class="uppercase" mat-header-cell mat-sort-header> {{ column.label }}</th>
+                  <td *matCellDef="let row" mat-cell align="right">
+                    <ng-container>{{ formatCurrency(row[column.property]) }} </ng-container>
+                  </td>
+                </ng-container>
+              </ng-container>
+
+              <tr *matHeaderRowDef="visibleOrderColumns" mat-header-row></tr>
+              <tr (click)="updateOrder(row)" *matRowDef="let row; columns: visibleOrderColumns;" @fadeInUp
+                class="hover:bg-hover trans-ease-out cursor-pointer" mat-row></tr>
+            </table>
+
+            <mat-paginator style="height: 1px;" [pageSizeOptions]="rgaPageSizeOptions" [pageSize]="rgaPageSize"
+              class="sticky left-0"></mat-paginator>
+            <mat-paginator [pageSize]="rgaPageSize" [pageIndex]="rgaPageIndex"
+              [pageSizeOptions]="rgaPageSizeOptions" class="sticky left-0" [length]="rgaDataCount"
+              [showFirstLastButtons]="true" (page)="onRGAPaginatorClicked($event)"></mat-paginator>
+          </div>
+        </vex-page-layout-content>
+      </vex-page-layout>
+
+      <mat-menu #columnFilterMenu="matMenu" xPosition="before" yPosition="below">
+        <button (click)="toggleRGAColumnVisibility(column, $event)" *ngFor="let column of rgaColumns"
+          class="checkbox-item mat-menu-item">
+          <mat-checkbox (click)="$event.stopPropagation()" [(ngModel)]="column.visible" color="primary">
+            {{ column.label }}
+          </mat-checkbox>
+        </button>
+      </mat-menu>
+
+      <mat-menu #actionsMenu="matMenu" xPosition="before" yPosition="below">
+        <ng-template let-quote="quote" matMenuContent>
+          <button (click)="printOrder($event, quote)" mat-menu-item>
+            <mat-icon svgIcon="mat:print"></mat-icon>
+            <span>Print</span>
+          </button>
+          <button (click)="updateOrder(quote)" mat-menu-item>
+            <mat-icon svgIcon="mat:edit"></mat-icon>
+            <span>Modify</span>
+          </button>
+          <button (click)="deleteOrder(quote)" mat-menu-item>
+            <mat-icon svgIcon="mat:delete"></mat-icon>
+            <span>Delete</span>
+          </button>
+        </ng-template>
+      </mat-menu>
+    </mat-tab>
+  </mat-tab-group>
+  <div class="flex-parent">
+    <table style="margin-left: 25px;">
+      <tr>
+        <!-- <td *ngIf="totalSalesSummaryListCA.length > 0" style="vertical-align: top;"> -->
+        <td style="vertical-align: top;">
+          <tr>
+            <th style="padding: 5px;"> (CA) Sales Person </th>
+            <th style="padding: 5px;"> Sales </th>
+            <th style="padding: 5px;"> Credit </th>
+            <th style="padding: 5px;"> Net Sales </th>
+            <th style="padding: 5px;"> Profit Margin </th>
+            <th style="padding: 5px;"> Return Percentage </th>
+          </tr>
+          
+          <tr *ngFor="let item of totalSalesSummaryListCA">
+            <td style="padding: 5px;"> {{ item.salesPerson }}</td>
+            <td style="padding: 5px; text-align: center;"> $ {{ formatCurrency(item.salesAmount) }}</td>
+            <td style="padding: 5px; text-align: center;"> $ {{ formatCurrency(item.creditAmount) }}</td>
+            <td style="padding: 5px; text-align: center;"> $ {{ formatCurrency(item.netSalesAmount) }}</td>
+            <td style="padding: 5px; text-align: center;">   {{ formatCurrency(item.profitMargin) }}%</td>
+            <td style="padding: 5px; text-align: center;">   {{ formatCurrency(item.returnPercentage) }}%</td>
+          </tr>
+          <tr>
+            <td style="padding: 5px; font-weight: bold;"> Total </td>
+            <td style="padding: 5px; font-weight: bold; text-align: center;"> $ {{ totalSalesCA }} </td>
+            <td style="padding: 5px; font-weight: bold; text-align: center;"> $ {{ totalCreditCA }} </td>
+            <td style="padding: 5px; font-weight: bold; text-align: center;"> $ {{ totalNetCA }} </td>
+            <td style="padding: 5px; font-weight: bold; text-align: center;"> {{ totalProfitCA }}% </td>
+            <td style="padding: 5px; font-weight: bold; text-align: center;"> {{ totalReturnCA }}% </td>
+          </tr>
+        </td>
+      </tr>
+    </table>
+    <table style="margin-left: 25px;">
+      <tr>
+        <!-- <td *ngIf="totalSalesSummaryListNV.length > 0"  style="vertical-align: top;"> -->
+        <td style="vertical-align: top;">
+          <tr>
+            <th style="padding: 5px;"> (NV) Sales Person </th>
+            <th style="padding: 5px;"> Sales </th>
+            <th style="padding: 5px;"> Credit </th>
+            <th style="padding: 5px;"> Net Sales </th>
+            <th style="padding: 5px;"> Profit Margin </th>
+            <th style="padding: 5px;"> Return Percentage </th>
+          </tr>
+
+          <tr *ngFor="let item of totalSalesSummaryListNV">
+            <td style="padding: 5px;"> {{ item.salesPerson }}</td>
+            <td style="padding: 5px; text-align: center;"> $ {{ formatCurrency(item.salesAmount) }}</td>
+            <td style="padding: 5px; text-align: center;"> $ {{ formatCurrency(item.creditAmount) }}</td>
+            <td style="padding: 5px; text-align: center;"> $ {{ formatCurrency(item.netSalesAmount) }}</td>
+            <td style="padding: 5px; text-align: center;">   {{ formatCurrency(item.profitMargin) }}%</td>
+            <td style="padding: 5px; text-align: center;">   {{ formatCurrency(item.returnPercentage) }}%</td>
+          </tr>
+          <tr>
+            <td style="padding: 5px; font-weight: bold;"> Total </td>
+            <td style="padding: 5px; font-weight: bold; text-align: center;"> $ {{ totalSalesNV }} </td>
+            <td style="padding: 5px; font-weight: bold; text-align: center;"> $ {{ totalCreditNV }} </td>
+            <td style="padding: 5px; font-weight: bold; text-align: center;"> $ {{ totalNetNV }} </td>
+            <td style="padding: 5px; font-weight: bold; text-align: center;"> {{ totalProfitNV }}% </td>
+            <td style="padding: 5px; font-weight: bold; text-align: center;"> {{ totalReturnNV }}% </td>
+          </tr>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <br>
+  <div *ngIf="deliverySummary">
+    <div class="flex-parent">
+      <table style="margin-left: 25px;">
+        <tr>
+          <!-- <td *ngIf="totalSalesSummaryListCA.length > 0" style="vertical-align: top;"> -->
+          <td style="vertical-align: top;">
+            <tr>
+              <th style="padding: 3px;"> (CA) Delivery Date: {{ formatDateOnly(deliverySummary.deliveryDate) }} </th>
+              <th style="padding: 3px;"> Stops: {{ deliverySummary.deliverySummaryCA.numberOfStops }}  </th>
+              <th style="padding: 2px;"> [ </th>
+              <th style="padding: 3px;" *ngFor="let item of deliverySummary.deliverySummaryCA.zoneSummaries">Zone {{ item.zone }} = {{ item.numberOfStops }}</th>
+              <th style="padding: 2px;"> ] </th>
+            </tr>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div class="flex-parent">
+      <table style="margin-left: 25px;">
+        <tr>
+          <td style="vertical-align: top;">
+            <tr>
+              <th style="padding: 3px;"> (NV) Delivery Date: {{ formatDateOnly(deliverySummary.deliveryDate) }} </th>
+              <th style="padding: 3px;"> Stops: {{ deliverySummary.deliverySummaryNV.numberOfStops }}  </th>
+              <th style="padding: 2px;"> [ </th>
+              <th style="padding: 3px;" *ngFor="let item of deliverySummary.deliverySummaryNV.zoneSummaries">Zone {{ item.zone }} = {{ item.numberOfStops }}</th>
+              <th style="padding: 2px;"> ] </th>
+            </tr>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- PRINT LAYOUT ------------------------------------------------------------------------------------------------------------------------------------------------------->
+<body *ngIf="data" id="section-print" style="margin-top: 20px;">
+  <div  *ngIf="data.orderStatusId=== 9; else notRGA" class="flex-parent">
+    <div class="flex-child-left">
+      <img src={{data.imagePath}} style="width: 200px;">
+    </div>
+    <div class="flex-child-center-fl">
+      <div class="flex-parent">
+        <span class="flex-child-center-fl" style="font-weight: bold;">RETURN GOOD AUTHORIZATION</span>
+      </div>
+      <div class="flex-parent">
+        <span class="flex-child-center-fl">PFOS RGA NUMBER: {{ data.orderNumber}}</span>
+      </div>
+      <div class="flex-parent">
+        <span class="flex-child-center-fl">THIS IS NOT A CREDIT, CREDIT WILL FOLLOW</span>
+      </div>
+    </div>
+    <div class="flex-child-right"><div style="text-align: center; font-weight: bold; font-size: x-large; padding-left: 25px;">RGA</div>
+      <div *ngIf="!data.isQuote">
+        <ngx-barcode [bc-value]="data.orderNumber" [bc-height]="25" [bc-width]="2" [bc-margin-left]="50" [bc-display-value]="false"></ngx-barcode>
+      </div>
+    </div>
+  </div>
+  <ng-template #notRGA>
+    <div class="flex-parent">
+      <div class="flex-child-left">
+        <img src={{data.imagePath}} style="width: 200px;">
+      </div>
+      <div *ngIf="!data.isQuote" class="flex-child-center-fl">
+        <span *ngIf="data.isCreditMemo">PFOS CREDIT MEMO: {{ data.orderNumber}}</span>
+        <span *ngIf="!data.isCreditMemo">PFOS ORDER NUMBER: {{ data.orderNumber}}</span>
+      </div>
+      <div *ngIf="data.isQuote" class="flex-child-center-l">PFOS QUOTE NUMBER: {{ data.quoteNumber}}</div>
+      <div class="flex-child-right">SALES ORDER: {{ data.invoiceNumber}}
+        <div *ngIf="!data.isQuote">
+          <ngx-barcode [bc-value]="data.orderNumber" [bc-height]="25" [bc-width]="2" [bc-margin-left]="50" [bc-display-value]="false"></ngx-barcode>
+        </div>
+      </div>
+    </div>
+  </ng-template>
+  
+  <div class="flex-parent">
+    <div class="flex-child-left">{{ data.address }}</div>
+    <div class="flex-child-right">PRINTED DATE/TIME: {{ formatDate(data.printDate) }}</div>
+  </div>
+  <div class="flex-parent">
+    <div class="flex-child-left">TEL: {{ data.phoneNumber }}</div>
+    <div class="flex-child-right">WEBSITE: {{ data.website}}</div>
+  </div>
+
+  <div class="flex-divider">___________________________________________________________________________________________________________________</div>
+
+  <div class="flex-parent">
+    <div class="flex-child-left-l">SOLD TO: {{ data.soldTo }}</div>
+    <div class="flex-child-left-l">SHIP TO: {{ data.shipTo }}</div>
+  </div>
+
+  <div class="flex-parent">
+    <div class="flex-child-left-l">{{ data.soldToAddress }}</div>
+    <div class="flex-child-left-l">{{ data.shipToAddress }}</div>
+  </div>
+
+  <div class="flex-parent">
+    <div class="flex-child-left-l">{{ data.soldToAddress2 }}</div>
+    <div class="flex-child-left-l">{{ data.shipToAddress2 }}</div>
+  </div>
+  
+  <div class="flex-divider">___________________________________________________________________________________________________________________</div>
+  
+  <div class="flex-parent">
+    <div class="flex-child-center">ACCOUNT</div>
+    <div class="flex-child-center">PHONE</div>
+    <div class="flex-child-center">PO/RO</div>
+    <div class="flex-child-center">TERMS</div>
+    <div class="flex-child-center">SOLD BY</div>
+  </div>
+
+  <div class="flex-parent">
+    <div class="flex-child-center">{{ data.accountNumber}}</div>
+    <div class="flex-child-center">{{ data.customerPhoneNumber }}</div>
+    <div class="flex-child-center">{{ data.purchaseOrderNumber }}</div>
+    <div class="flex-child-center">{{ data.customerTerms }}</div>
+    <div class="flex-child-center">{{ data.soldBy }}</div>
+  </div>
+
+  <div class="flex-divider">___________________________________________________________________________________________________________________</div>
+
+  <div class="flex-parent">
+    <div class="flex-child-center-h-70">QTY</div>
+    <div class="flex-child-center-h-150">ITEM NO</div>
+    <div class="flex-child-center-h">DESCRIPTION-PARTSLINK-LOCATION</div>
+    <div *ngIf="data.orderStatusId !== 9" class="flex-child-center-h-70">LIST</div>
+    <div class="flex-child-center-h-70">PRICE</div>
+    <div class="flex-child-center-h-70">EXT</div>
+  </div>
+  <div class="flex-parent-padded" *ngFor="let item of data.lineItems">
+    <div class="flex-child-center-70">{{ item.quantity }}&nbsp;&nbsp;&nbsp;{{ item.quantity }}</div>
+    <div class="flex-child-left-l-150">{{ item.partNumber }}</div>
+    <div class="flex-child-left">{{ item.description }}</div>
+    <div *ngIf="data.orderStatusId !== 9" class="flex-child-right-70">{{ item.lprice }}</div>
+    <div class="flex-child-right-70">{{ item.price }}</div>
+    <div class="flex-child-right-70">{{ item.extPrice }}</div>
+  </div>
+
+  <div *ngIf="data.orderStatusId === 9">
+    <div class="flex-parent">
+      <div class="flex-child-left">RETURN REASON: {{ data.rgaReason}}</div>
+    </div>
+    <div class="flex-parent">
+      <div class="flex-child-left">NOTES: {{ data.rgaReasonNotes}}</div>
+    </div>
+    <div class="flex-parent">
+      <div class="flex-child-left">RGA TYPE: <span style="font-size: large; font-weight: bold;">{{ data.rgaType }}</span></div>
+    </div>
+  </div> 
+
+  <div>TOTAL QUANTITY: {{ data.totalQuantity }}</div>
+  <div class="flex-parent">
+    <div class="flex-child-left">NOTES: {{ data.notes}}</div>
+  </div>
+
+  <div class="flex-parent">
+    <div class="flex-child-left">
+      <span *ngIf="data.orderStatusId !== 9">ORDERED BY: {{ data.orderedBy}}</span>
+    </div>
+    <div class="flex-child-left">PHONE: {{ data.orderedByPhone}}</div>
+  </div>
+
+  <div class="flex-parent">
+    <div class="flex-child-left">RECEIVED BY: _______________________</div>
+    <div class="flex-child-left">PAYMENT TYPE: _______________________</div>
+  </div>
+
+  <div style="font-size: large; font-weight: bolder;">{{data.orderType }} {{ data.zone }}</div>
+
+  <div class="flex-parent">
+    <div class="flex-child-left">
+      <span *ngIf="data.orderStatusId !== 9; else isRGA">EXPECTED DELIVERY DATE: {{ data.deliveryDate }}</span>
+      <ng-template #isRGA>
+        <span>EXPECTED PICKUP DATE: {{ data.deliveryDate }}</span>
+      </ng-template>
+    </div>
+    <!-- <div class="flex-child-left">EXPECTED DELIVERY DATE: {{ data.deliveryDate }}</div> -->
+    <div class="flex-child-right-l-100">SUB TOTAL:</div>
+    <div class="flex-child-right-l-75">{{ data.subTotal }}</div>
+  </div>
+
+  <div class="flex-parent">
+    <div class="flex-child-left">{{ data.staticText1 }}</div>
+    <div class="flex-child-right-l-100">TAX:</div>
+    <div class="flex-child-right-l-75">{{ data.tax }}</div>
+  </div>
+
+  <div class="flex-parent">
+    <div class="flex-child-left">{{ data.staticText2 }}</div>
+    <div class="flex-child-right-l-100">TOTAL:</div>
+    <div class="flex-child-right-l-75">{{ data.total }}</div>
+  </div>
+  
+  <!-- <div align="center" class="footer" id="page-number"></div> -->
+</body>
+<!-- PRINT LAYOUT ------------------------------------------------------------------------------------------------------------------------------------------------------->

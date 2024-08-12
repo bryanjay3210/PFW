@@ -1,0 +1,216 @@
+<vex-page-layout>
+  <vex-page-layout-header class="pb-16 flex flex-col items-start justify-center">
+    <div [class.container]="layoutCtrl.value === 'boxed'" [class.px-gutter]="layoutCtrl.value === 'fullwidth'"
+      class="w-full flex flex-col sm:flex-row justify-between">
+      <div>
+        <h1 class="title mt-0 mb-1">Bin Location Put Away</h1>
+        <vex-breadcrumbs
+          [crumbs]="['Menu Tab Module', 'Warehouse Management',  'Bin Location Put Away']"></vex-breadcrumbs>
+      </div>
+    </div>
+  </vex-page-layout-header>
+  <vex-page-layout-content [class.container]="layoutCtrl.value === 'boxed'"
+    [class.px-gutter]="layoutCtrl.value === 'fullwidth'" class="-mt-6">
+    <div class="card overflow-auto -mt-16">
+      <div class="bg-app-bar px-6 h-16 border-b sticky left-0 flex items-center">
+        <h2 class="title my-0 ltr:pr-4 rtl:pl-4 ltr:mr-4 rtl:ml-4 ltr:border-r rtl:border-l hidden sm:block flex-none">
+          <span>Bin Location Put Away</span>
+        </h2>
+        <div
+          class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+          <mat-icon class="icon-sm text-secondary" svgIcon="mat:location_on"></mat-icon>
+          <mat-select #type [formControl]="typeCtrl" aria-required="true"
+            class="px-4 py-2 border-0 outline-none w-full bg-transparent" placeholder="Transaction Type"
+            (selectionChange)="transactionTypeSelectionChange($event)">
+            <mat-option *ngFor="let e of typeList" [value]="e.id">{{ e.name }} </mat-option>
+          </mat-select>
+        </div>
+
+        <!-- Batch Putaway -->
+        <div *ngIf="selectedType === '1'" class="flex-parent  ">
+          <div
+            class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+            <mat-icon class="icon-sm text-secondary" svgIcon="mat:location_on"></mat-icon>
+            <mat-select #state [formControl]="stateCtrl" aria-required="true"
+              class="px-4 py-2 border-0 outline-none w-full bg-transparent" placeholder="State"
+              (selectionChange)="stateSelectionChange($event)">
+              <mat-option *ngFor="let e of stateList" [value]="e.id">{{ e.name }} </mat-option>
+            </mat-select>
+          </div>
+          <div
+            class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+            <mat-icon class="icon-sm text-secondary" svgIcon="mat:find_replace"></mat-icon>
+            <input #location [formControl]="locationCtrl" class="px-4 py-2 border-0 outline-none w-full bg-transparent"
+              placeholder="Enter/Scan Location..." type="search" (keyup.enter)="searchLocation()">
+          </div>
+          <div
+            class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+            <mat-icon class="icon-sm text-secondary" svgIcon="mat:find_replace"></mat-icon>
+            <input #product [formControl]="productCtrl" class="px-4 py-2 border-0 outline-none w-full bg-transparent"
+              placeholder="Enter/Scan Product..." type="search" (keyup.enter)="searchProduct()">
+          </div>
+          <span class="flex-1"></span>
+          <button *ngIf="access === userPermission.FullAccess" (click)="clearWarehouseStocks()" class="ml-4 flex-none"
+            color="primary" mat-mini-fab matTooltip="Clear" type="button">
+            <mat-icon svgIcon="mat:clear"></mat-icon>
+          </button>
+          <button *ngIf="access === userPermission.FullAccess" (click)="updateWarehouseStocks()" class="ml-4 flex-none"
+            color="primary" mat-mini-fab matTooltip="Update Warehouse Stocks" type="button">
+            <mat-icon svgIcon="mat:add"></mat-icon>
+          </button>
+        </div>
+
+        <!-- Parts Transfer To Bin -->
+        <div *ngIf="selectedType === '2'" class="flex-parent  ">
+          <div
+            class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+            <mat-icon class="icon-sm text-secondary" svgIcon="mat:location_on"></mat-icon>
+            <mat-select #state [formControl]="stateCtrl" aria-required="true"
+              class="px-4 py-2 border-0 outline-none w-full bg-transparent" placeholder="State"
+              (selectionChange)="stateSelectionChange($event)">
+              <mat-option *ngFor="let e of stateList" [value]="e.id">{{ e.name }} </mat-option>
+            </mat-select>
+          </div>
+          <div
+            class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+            <mat-icon class="icon-sm text-secondary" svgIcon="mat:find_replace"></mat-icon>
+            <input #location [formControl]="locationCtrl" class="px-4 py-2 border-0 outline-none w-full bg-transparent"
+              placeholder="Enter/Scan Location..." type="search" (keyup.enter)="searchLocation()">
+          </div>
+          <div
+            class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+            <mat-icon class="icon-sm text-secondary" svgIcon="mat:find_replace"></mat-icon>
+            <input #product [formControl]="productCtrl" class="px-4 py-2 border-0 outline-none w-full bg-transparent"
+              placeholder="Enter/Scan Product..." type="search" (keyup.enter)="searchProductInLocation()">
+          </div>
+          <div
+            class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+            <mat-icon class="icon-sm text-secondary" svgIcon="mat:find_replace"></mat-icon>
+            <input #destination [formControl]="destinationLocationCtrl" class="px-4 py-2 border-0 outline-none w-full bg-transparent"
+              placeholder="Enter/Scan Destination Loca..." type="search" (keyup.enter)="searchDestinationLocation()">
+          </div>
+          <span class="flex-1"></span>
+          <button *ngIf="access === userPermission.FullAccess" (click)="clearWarehouseStocks()" class="ml-4 flex-none"
+            color="primary" mat-mini-fab matTooltip="Clear" type="button">
+            <mat-icon svgIcon="mat:clear"></mat-icon>
+          </button>
+          <button *ngIf="access === userPermission.FullAccess" (click)="transferPartsToBin()" class="ml-4 flex-none"
+            color="primary" mat-mini-fab matTooltip="Transfer Parts To Bin" type="button">
+            <mat-icon svgIcon="mat:add"></mat-icon>
+          </button>
+        </div>
+
+        <!-- Bin To Bin Transfer -->
+        <div *ngIf="selectedType === '3'" class="flex-parent  ">
+          <div
+            class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+            <mat-icon class="icon-sm text-secondary" svgIcon="mat:location_on"></mat-icon>
+            <mat-select #state [formControl]="stateCtrl" aria-required="true"
+              class="px-4 py-2 border-0 outline-none w-full bg-transparent" placeholder="State"
+              (selectionChange)="stateSelectionChange($event)">
+              <mat-option *ngFor="let e of stateList" [value]="e.id">{{ e.name }} </mat-option>
+            </mat-select>
+          </div>
+          <div
+            class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+            <mat-icon class="icon-sm text-secondary" svgIcon="mat:find_replace"></mat-icon>
+            <input #location [formControl]="locationCtrl" class="px-4 py-2 border-0 outline-none w-full bg-transparent"
+              placeholder="Enter/Scan Location..." type="search" (keyup.enter)="searchLocationWithStocks()">
+          </div>
+          <div
+            class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+            <mat-icon class="icon-sm text-secondary" svgIcon="mat:find_replace"></mat-icon>
+            <input #destination [formControl]="destinationLocationCtrl" class="px-4 py-2 border-0 outline-none w-full bg-transparent"
+              placeholder="Enter/Scan Destination Loca..." type="search" (keyup.enter)="searchDestinationLocation()">
+          </div>
+          <span class="flex-1"></span>
+          <button *ngIf="access === userPermission.FullAccess" (click)="clearWarehouseStocks()" class="ml-4 flex-none"
+            color="primary" mat-mini-fab matTooltip="Clear" type="button">
+            <mat-icon svgIcon="mat:clear"></mat-icon>
+          </button>
+          <button *ngIf="access === userPermission.FullAccess" (click)="transferBinToBin()" class="ml-4 flex-none"
+            color="primary" mat-mini-fab matTooltip="Update Warehouse Stocks" type="button">
+            <mat-icon svgIcon="mat:add"></mat-icon>
+          </button>
+        </div>
+
+        <!-- Cycle Count -->
+        <div *ngIf="selectedType === '4'" class="flex-parent  ">
+          <div
+            class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+            <mat-icon class="icon-sm text-secondary" svgIcon="mat:location_on"></mat-icon>
+            <mat-select #state [formControl]="stateCtrl" aria-required="true"
+              class="px-4 py-2 border-0 outline-none w-full bg-transparent" placeholder="State"
+              (selectionChange)="stateSelectionChange($event)">
+              <mat-option *ngFor="let e of stateList" [value]="e.id">{{ e.name }} </mat-option>
+            </mat-select>
+          </div>
+          <div
+            class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+            <mat-icon class="icon-sm text-secondary" svgIcon="mat:find_replace"></mat-icon>
+            <input #location [formControl]="locationCtrl" class="px-4 py-2 border-0 outline-none w-full bg-transparent"
+              placeholder="Enter/Scan Location..." type="search" (keyup.enter)="searchLocation()">
+          </div>
+          <div
+            class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+            <mat-icon class="icon-sm text-secondary" svgIcon="mat:find_replace"></mat-icon>
+            <input #product [formControl]="productCtrl" class="px-4 py-2 border-0 outline-none w-full bg-transparent"
+              placeholder="Enter/Scan Product..." type="search" (keyup.enter)="searchProductInLocation()">
+          </div>
+          <span class="flex-1"></span>
+          <button *ngIf="access === userPermission.FullAccess" (click)="clearWarehouseStocks()" class="ml-4 flex-none"
+            color="primary" mat-mini-fab matTooltip="Clear" type="button">
+            <mat-icon svgIcon="mat:clear"></mat-icon>
+          </button>
+          <button *ngIf="access === userPermission.FullAccess" (click)="updateCycleCount()" class="ml-4 flex-none"
+            color="primary" mat-mini-fab matTooltip="Update Warehouse Stocks" type="button">
+            <mat-icon svgIcon="mat:add"></mat-icon>
+          </button>
+        </div>
+      </div>
+
+      <table @stagger [dataSource]="dataSource" class="w-full" mat-table matSort>
+        <!-- Text Columns -->
+        <ng-container *ngFor="let column of columns;">
+          <ng-container *ngIf="column.type === 'text'" [matColumnDef]="column.property">
+            <th *matHeaderCellDef class="uppercase" mat-header-cell mat-sort-header> {{ column.label }}</th>
+            <div *ngIf="column.property === 'quantity' && selectedType === '4'; else isNotCycleCount">
+              <td *matCellDef="let row">
+                <input class="span-column" type="number" min="0" style="width: 70px; margin-left: 20px; align-items: end;"
+                [value]="row.quantity"  (change)="handleQuantityOnChangeEvent(row, $event)" onkeydown="return event.key != 'Enter';">
+              </td>
+              
+            </div>
+            <ng-template #isNotCycleCount>
+              <td *matCellDef="let row" [ngClass]="column.cssClasses" mat-cell>{{ row[column.property] }}</td>
+            </ng-template>
+            
+          </ng-container>
+        </ng-container>
+
+        <!-- Action Column -->
+        <ng-container matColumnDef="actions" style="width: 25px;">
+          <th *matHeaderCellDef mat-header-cell mat-sort-header style="width: 25px;">ACTION</th>
+          <td *matCellDef="let row" class="w-10 text-secondary" mat-cell style="width: 25px;" align="center">
+            <button *ngIf="access === userPermission.FullAccess" (click)="deleteStock(row)">
+              <mat-icon svgIcon="mat:delete" matTooltip="Remove Stock"></mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr *matHeaderRowDef="visibleColumns" mat-header-row></tr>
+        <tr *matRowDef="let row; columns: visibleColumns;" @fadeInUp
+          class="hover:bg-hover trans-ease-out cursor-pointer" mat-row></tr>
+      </table>
+    </div>
+  </vex-page-layout-content>
+</vex-page-layout>
+
+<!-- <mat-menu #columnFilterMenu="matMenu" xPosition="before" yPosition="below">
+  <button (click)="toggleColumnVisibility(column, $event)" *ngFor="let column of columns"
+    class="checkbox-item mat-menu-item">
+    <mat-checkbox (click)="$event.stopPropagation()" [(ngModel)]="column.visible" color="primary">
+      {{ column.label }}
+    </mat-checkbox>
+  </button>
+</mat-menu> -->

@@ -1,0 +1,114 @@
+<vex-page-layout>
+  <vex-page-layout-content>
+    <div>
+      <div class="bg-app-bar px-6 h-16 border-b sticky left-0 flex items-center">
+        <h2 class="title my-0 ltr:pr-4 rtl:pl-4 ltr:mr-4 rtl:ml-4 ltr:border-r rtl:border-l hidden sm:block flex-none">
+          <span *ngIf="!selection.hasValue()">Products</span>
+          <span *ngIf="selection.hasValue()">{{ selection.selected.length }}
+            Product<span *ngIf="selection.selected.length > 1">s</span> selected</span>
+        </h2>
+        <div
+          class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+          <mat-icon class="icon-sm text-secondary" svgIcon="mat:search"></mat-icon>
+          <input [formControl]="searchCtrl" class="px-4 py-2 border-0 outline-none w-full bg-transparent" (keydown.enter)="searchProducts()" placeholder="Search..." matInput>
+        </div>
+        <span *ngIf="!!searchCtrl.value && searchCtrl.value.trim().length > 0">
+          <button (click)="searchProducts()" class="ml-4 flex-none" color="primary" mat-mini-fab
+            matTooltip="Search Products" type="button">
+            <mat-icon svgIcon="mat:search"></mat-icon>
+          </button>
+        </span>
+        <span class="flex-1"></span>
+        <button [matMenuTriggerFor]="columnFilterMenu" class="ml-4 flex-none" mat-icon-button
+          matTooltip="Filter Columns" type="button">
+          <mat-icon svgIcon="mat:filter_list"></mat-icon>
+        </button>
+        <button class="text-secondary" mat-dialog-close mat-icon-button type="button">
+          <mat-icon svgIcon="mat:close"></mat-icon>
+        </button>
+      </div>
+
+      <table @stagger [dataSource]="dataSource" class="w-full" mat-table matSort>
+        <!-- Checkbox Column -->
+        <ng-container matColumnDef="checkbox">
+          <th *matHeaderCellDef mat-header-cell></th>
+          <td *matCellDef="let row" class="w-4" mat-cell>
+            <mat-checkbox [disabled]="row.isActive === false" (change)="$event ? selection.toggle(row) : null"
+              (click)="$event.stopPropagation()" [checked]="selection.isSelected(row)" color="primary">
+            </mat-checkbox>
+          </td>
+        </ng-container>
+
+        <!-- Image Column -->
+        <ng-container *ngFor="let column of columns; trackBy: trackByProperty">
+          <ng-container *ngIf="column.type === 'image' && column.property !=='imageUrl'" [matColumnDef]="column.property">
+            <th *matHeaderCellDef class="uppercase" mat-header-cell mat-sort-header> {{ column.label }}</th>
+            <td *matCellDef="let row" [ngClass]="column.cssClasses" mat-cell align="center">
+              <ng-container>
+                <mat-icon *ngIf="row[column.property] === true" svgIcon="mat:check"></mat-icon>
+              </ng-container>
+            </td>
+          </ng-container>
+        </ng-container>
+        
+        <!-- Image URL Column -->
+        <ng-container matColumnDef="imageUrl">
+          <th *matHeaderCellDef mat-header-cell></th>
+          <td *matCellDef="let row" class="tooltip-img w-16 min-w-16 pr-0" mat-cell>
+            <img [src]="row['imageUrl']" (error)="setDefaultImage($event.target)" class="avatar h-16 w-16">
+            <table class="tooltiptext-img" style="min-width: 1000px important;">
+              <th class="overflow-ellipsis-wide h-8" title="{{ row.partNumber }} - {{ row.partDescription }}">
+                <span>{{ row.partNumber }} - {{ row.partDescription }}</span>
+              </th>
+              <tr>
+                <td><img [src]="row['imageUrl']" (error)="setDefaultImage($event.target)" class="align-middle"></td>
+              </tr>
+            </table>
+          </td>
+        </ng-container>
+
+        <!-- Text Columns -->
+        <ng-container *ngFor="let column of columns; trackBy: trackByProperty">
+          <ng-container *ngIf="column.type === 'text'" [matColumnDef]="column.property">
+            <th *matHeaderCellDef class="uppercase" mat-header-cell mat-sort-header> {{ column.label }}</th>
+            <td *matCellDef="let row" [ngClass]="column.cssClasses" mat-cell>
+              <ng-container *ngIf="column.property !== 'isActive'">{{ row[column.property] }} </ng-container>
+              <ng-container *ngIf="column.property === 'isActive' && row.isActive">Active</ng-container>
+              <ng-container *ngIf="column.property === 'isActive' && !row.isActive">Inactive</ng-container>
+            </td>
+          </ng-container>
+        </ng-container>
+
+        <tr *matHeaderRowDef="visibleColumns" mat-header-row></tr>
+        <tr (click)="selectProduct(row)" *matRowDef="let row; columns: visibleColumns;" @fadeInUp
+          class="hover:bg-hover trans-ease-out cursor-pointer" [ngClass]="row.isActive === false ? 'inactiveRow' : ''"
+          mat-row>
+        </tr>
+      </table>
+
+      <mat-paginator style="height: 1px;" [pageSizeOptions]="pageSizeOptions" [pageSize]="pageSize"
+        class="sticky left-0"></mat-paginator>
+      <mat-paginator [pageSize]="pageSize" [pageIndex]="pageIndex" [pageSizeOptions]="pageSizeOptions"
+        class="sticky left-0" [length]="dataCount" [showFirstLastButtons]="true"
+        (page)="onPaginatorClicked($event)"></mat-paginator>
+
+      <div id="footer" *ngIf="access === userPermission.FullAccess">
+        <div id="footernext">
+          <button [disabled]="this.selection.selected.length === 0" color="primary" mat-flat-button (click)="selectProducts($event)">Select</button>
+        </div>
+        <div id="footerback">
+          <button mat-button mat-dialog-close type="button">Cancel</button>
+        </div>
+      </div>
+
+    </div>
+  </vex-page-layout-content>
+</vex-page-layout>
+<mat-menu #columnFilterMenu="matMenu" xPosition="before" yPosition="below">
+  <button (click)="toggleColumnVisibility(column, $event)" *ngFor="let column of columns"
+    class="checkbox-item mat-menu-item">
+    <mat-checkbox (click)="$event.stopPropagation()" [(ngModel)]="column.visible" color="primary">
+      {{ column.label }}
+    </mat-checkbox>
+  </button>
+</mat-menu>

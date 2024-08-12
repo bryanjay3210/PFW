@@ -1,0 +1,38 @@
+<form (ngSubmit)="save()" [formGroup]="form">
+   <div class="flex items-center" mat-dialog-title>
+      <img [src]="imageDefault" class="avatar-sq mr-5">
+      <h2 *ngIf="isCreateMode()" class="headline m-0 flex-auto">New Part Location</h2>
+      <h2 *ngIf="isUpdateMode()" class="headline m-0 flex-auto">{{ form.get('location').value }}</h2>
+      <button class="text-secondary" mat-dialog-close mat-icon-button type="button">
+         <mat-icon svgIcon="mat:close"></mat-icon>
+      </button>
+   </div>
+   <mat-divider class="-mx-6 text-border"></mat-divider>
+   <mat-dialog-content class="flex flex-col">
+      <div class="flex flex-col sm:flex-row">
+         <mat-form-field class="mt-6 flex-auto">
+            <mat-label>Location</mat-label>
+            <input formControlName="location" matInput required>
+         </mat-form-field>
+         <mat-form-field class="sm:mt-6 sm:ml-6 flex-auto">
+            <mat-label>Quantity</mat-label>
+            <input formControlName="quantity" type="number" min="0" matInput required>
+         </mat-form-field>
+      </div>
+      <div class="flex flex-col sm:flex-row">
+         <mat-form-field class="mt-6 flex-auto">
+            <mat-label>Zoning</mat-label>
+            <input formControlName="zoning" type="number" min="0" matInput required>
+         </mat-form-field>
+         <mat-form-field class="sm:mt-6 sm:ml-6 flex-auto">
+            <mat-label>Height</mat-label>
+            <input formControlName="height" type="number" min="0" matInput required>
+         </mat-form-field>
+      </div>
+   </mat-dialog-content>
+   <mat-dialog-actions *ngIf="access === userPermission.FullAccess" align="end">
+      <button mat-button mat-dialog-close type="button">Cancel</button>
+      <button *ngIf="isCreateMode()" color="primary" mat-flat-button (click)="save()">Create Parts Location</button>
+      <button *ngIf="isUpdateMode()" color="primary" mat-flat-button (click)="save()">Update Parts Location</button>
+   </mat-dialog-actions>
+</form>

@@ -1,0 +1,42 @@
+body {
+    font-family: Tahoma;
+    font-size: medium;
+}
+
+table {
+    width: 100%;
+    table-layout: fixed;
+}
+
+td {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-wrap: break-word;
+}
+
+* {
+    overflow: visible !important;
+}
+
+.page {
+    page-break-after: always;
+}
+
+
+// @media print {
+//     /* invert the display (show/hide) properties of the main */
+//     /* aplication component and the printing component       */
+//     // body, html, #wrapper {
+//     //   height: 100%;
+//     // }
+//     vex-print-invoice-layout {
+//         // height: 100%;
+//         // overflow-y: visible;
+//         // overflow-x: visible;
+//         display: block;
+//     }
+
+//     mat-tab-group {
+//         display: none;
+//     }
+// }

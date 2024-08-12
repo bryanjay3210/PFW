@@ -1,0 +1,269 @@
+<form *ngIf="form" [formGroup]="form" (keydown.enter)="$event.preventDefault()">
+  <div class="flex items-center" mat-dialog-title>
+    <img [src]="imageDefault" class="avatar-sq mr-5">
+    <h2 class="headline m-0 flex-auto">
+      (Discount) Order Number: {{ defaults.orderNumber }} | Invoice Number: {{ defaults.invoiceNumber }} | 
+      <span style="font-size: large;">Order Date: {{ formatDate(defaults.createdDate) }} | Created By: {{ defaults.createdBy}} | Modified By: {{ defaults.modifiedBy}}</span>
+    </h2>
+    <button [matMenuTriggerFor]="settingsMenu" class="text-secondary" mat-icon-button type="button">
+      <mat-icon svgIcon="mat:more_vert"></mat-icon>
+    </button>
+    <button class="text-secondary" mat-icon-button type="button" (click)="cancel()">
+      <mat-icon svgIcon="mat:close"></mat-icon>
+    </button>
+  </div>
+
+  <mat-divider class="-mx-6 text-border"></mat-divider>
+  <mat-dialog-content class="flex flex-col" style="height: 500px !important;">
+    <!--TABLE--------------------------------------------------------------------------------------------->
+    <table @stagger [dataSource]="dataSource" class="w-full" mat-table matSort>
+
+      <!-- Image Column -->
+      <ng-container matColumnDef="imageUrl">
+        <th *matHeaderCellDef mat-header-cell></th>
+        <td *matCellDef="let row" class="tooltip-img w-16 min-w-16 pr-0" mat-cell>
+          <img [src]="row['imageUrl']" class="avatar h-16 w-16">
+          <table class="tooltiptext-img" style="min-width: 1000px important;">
+            <th class="overflow-ellipsis-wide h-8" title="{{ row.partNumber }} - {{ row.partDescription }}">
+              <span>{{ row.partNumber }} - {{ row.partDescription }}</span>
+            </th>
+            <tr>
+              <td><img [src]="row['imageUrl']" class="align-middle"></td>
+            </tr>
+          </table>
+        </td>
+      </ng-container>
+
+      <!-- Quantity Column -->
+      <ng-container matColumnDef="orderQuantity" style="width: 50px; margin-left: -10px;">
+        <th *matHeaderCellDef mat-header-cell mat-sort-header style="width: 50px; margin-left: -10px;">QTY</th>
+        <td *matCellDef="let row" mat-cell>
+          <div class="flex items-center gap-1">
+            <input class="span-column" type="number" min="1" style="width: 50px; margin-left: -10px;" readonly [value]="row.orderQuantity">
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- Vendor Select Column -->
+      <ng-container matColumnDef="vendors">
+        <th *matHeaderCellDef mat-header-cell mat-sort-header>VENDOR</th>
+        <td *matCellDef="let row" style="justify-content: center; width: auto;">
+          <div (click)="$event.stopPropagation()" class="flex items-center gap-1">
+            <div class="text-secondary bg-base text-hint cursor-pointer hover:bg-hover flex-none flex items-center justify-center">
+              <mat-icon class="icon-sm" svgIcon="mat:face"></mat-icon> 
+            </div>
+            <span class="span-column">
+              <span *ngIf="row.vendorCode.length > 0">( {{ row.vendorCode }} )</span><br>
+              <span *ngIf="row.vendorCode.length > 0">{{ row.vendorPartNumber }}</span><br>
+              <span *ngIf="row.vendorCode.length > 0">${{ formatCurrency(row.vendorPrice) }}</span><br>
+              <span *ngIf="row.vendorCode.length > 0">{{ row.vendorOnHand }}</span>
+            </span>
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- Stock / On Hand Quantity -->
+      <ng-container matColumnDef="onHandQuantity" style="width: 40px;">
+        <th *matHeaderCellDef mat-header-cell mat-sort-header style="width: 40px;">STK</th>
+        <td *matCellDef="let row" class="tooltipstock" mat-cell style="width: 40px;">
+          <div class="flex items-center gap-1">
+            <span class="span-column">{{ row.onHandQuantity }}</span>
+          </div>
+          <table class="tooltipstocktext" *ngIf="row.stocks">
+            <th>Location</th>
+            <th>Qty</th>
+            <tr *ngFor="let stock of row.stocks">
+              <td>{{ stock.location }}</td>
+              <td>{{ stock.quantity }}
+              <td>
+            </tr>
+          </table>
+        </td>
+      </ng-container>
+
+      <!-- List Price Column -->
+      <ng-container matColumnDef="listPrice" style="width: 50px;">
+        <th *matHeaderCellDef mat-header-cell mat-sort-header style="width: 50px;">LIST PRC</th>
+        <td *matCellDef="let row" mat-cell>
+          <div align="right" class="currency-wrap">
+            <span class="currency-code">$</span>
+            <input class="span-column" type="number" min="0" style="width: 70px; margin-left: -10px;" readonly [value]="formatCurrency(row.listPrice)">
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- Wholesale Price Column -->
+      <ng-container matColumnDef="wholesalePrice" style="width: 50px;">
+        <th *matHeaderCellDef mat-header-cell mat-sort-header style="width: 50px;">PRICE</th>
+        <td *matCellDef="let row" mat-cell>
+          <div align="right" class="currency-wrap">
+            <span class="currency-code">$</span>
+            <input class="span-column" type="number" min="0" style="width: 70px; margin-left: -10px;" readonly [value]="formatCurrency(row.wholesalePrice)">
+          </div>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="yearFrom">
+        <th *matHeaderCellDef mat-header-cell mat-sort-header>YEAR</th>
+        <td *matCellDef="let row" mat-cell>
+          <div class="flex items-center gap-1">
+            <span class="span-column">{{ row.yearFrom }}<br>{{ row.yearTo }}</span>
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- Text Columns -->
+      <div *ngFor="let column of columns" style="width: 50px;">
+        <ng-container *ngIf="column.type === 'text' && column.property === 'partsLinks'"
+          [matColumnDef]="column.property">
+          <th *matHeaderCellDef mat-header-cell mat-sort-header style="width: 50px;"> PLinks & OEM</th>
+          <td *matCellDef="let row" mat-cell>
+            <div class="flex items-center gap-1">
+              <span class="span-column overflow-ellipsis-wide" title="{{ row.partsLinks }} {{ row.oeMs }}">{{
+                row.partsLinks }}<br>{{ row.oeMs }}</span>
+            </div>
+          </td>
+        </ng-container>
+
+        <ng-container
+          *ngIf="column.type === 'text' && (column.property !== 'partDescription' && column.property !== 'partsLinks' && column.property !== 'partNumber')"
+          [matColumnDef]="column.property" style="width: 50px;">
+          <th *matHeaderCellDef mat-header-cell mat-sort-header style="width: 50px;"> {{ column.label }}</th>
+          <td *matCellDef="let row" class="overflow-ellipsis" title="{{ row[column.property] }}" mat-cell
+            style="width: 50px;">{{ row[column.property] }}</td>
+        </ng-container>
+
+        <ng-container *ngIf="column.type === 'text' && column.property === 'partDescription'"
+          [matColumnDef]="column.property">
+          <th *matHeaderCellDef mat-header-cell mat-sort-header> {{ column.label }}</th>
+          <td *matCellDef="let row" class="overflow-wrap" title="{{ row[column.property] }}" mat-cell>{{
+            row[column.property] }}</td>
+        </ng-container>
+
+        <!-- Part Number & Warehouse Tracking -->
+        <ng-container *ngIf="column.type === 'text' && column.property === 'partNumber'" [matColumnDef]="column.property">
+          <th *matHeaderCellDef mat-header-cell mat-sort-header style="width: 150px;"> {{ column.label }}</th>
+          <td *matCellDef="let row" mat-cell style="width: 150px;">
+            <div class="flex items-center gap-1">
+              <span class="span-left">{{ row.partNumber }}</span><br>
+            </div>
+            <div class="flex flex-col sm:flex-row sm:gap-4">
+              <mat-form-field class="mt-6 flex-auto">
+                <mat-label>Warehouse Tracking</mat-label>
+                <input formControlName="warehouseTracking" [value]="row.warehouseTracking && row.warehouseTracking !== undefined && row.warehouseTracking !== null ? row.warehouseTracking : ''" matInput readonly>
+              </mat-form-field>
+            </div>
+          </td>
+        </ng-container>
+
+        <ng-container
+          *ngIf="column.type === 'number' && (column.property === 'discountedPrice' || column.property === 'totalAmount' || column.property === 'restockingFee' || column.property === 'restockingAmount' || column.property === 'discount' || column.property === 'discountAmount')"
+          [matColumnDef]="column.property" style="width: 50px;">
+          <th *matHeaderCellDef mat-header-cell mat-sort-header style="width: 50px;"> {{ column.label }}</th>
+          <td *matCellDef="let row" mat-cell style="width: 70px;">
+            <div class="flex items-center gap-1">
+              <span class="span-column">${{formatCurrency(row[column.property])}}</span>
+            </div>
+          </td>
+        </ng-container>
+      </div>
+
+      <tr *matHeaderRowDef="visibleColumns" mat-header-row></tr>
+      <!-- <tr *matRowDef="let row; columns: visibleColumns;" @fadeInUp class="hover:bg-hover trans-ease-out cursor-pointer" mat-row></tr> -->
+      <tr *matRowDef="let row; columns: visibleColumns;" @fadeInUp class="hover:bg-hover trans-ease-out cursor-pointer"
+        [ngClass]="row.statusId === 1 || row.statusId === 2? 'inactiveRow' :''" mat-row></tr>
+
+    </table>
+  </mat-dialog-content>
+</form>
+
+<mat-divider class="-mx-6 text-border"></mat-divider>
+<mat-divider class="-mx-6 text-border"></mat-divider>
+
+<form *ngIf="form" [formGroup]="form">
+  <div class="px-4 py-2 flex flex-col" style="margin-top: 0px;">
+    <table style="width: 100%;">
+      <tr>
+        <td></td>
+        <td align="right">
+          <mat-form-field class="mt-6 flex-auto">
+            <mat-label>Sub Total</mat-label>
+            <input formControlName="summarySubTotal" type="number" matInput readonly
+              style="text-align: right;">
+          </mat-form-field>
+        </td>
+      </tr>
+      <tr>
+        <td></td>
+        <td align="right">
+          <mat-form-field class="mt-6 flex-auto">
+            <mat-label>Discount (%)</mat-label>
+            <input cdkFocusInitial formControlName="summaryDiscount" type="number" min="0" (change)="handleSummaryOnChangeEvent()" matInput style="text-align: right;">
+          </mat-form-field>
+          <mat-form-field class="mt-6 flex-auto">
+            <mat-label>Discount Amount</mat-label>
+            <input cdkFocusInitial formControlName="summaryDiscountAmount" type="number" matInput readonly style="text-align: right;">
+          </mat-form-field>
+        </td>
+      </tr>
+      <!-- <tr>
+        <td></td>
+        <td align="right">
+          <mat-form-field class="mt-6 flex-auto">
+            <mat-label>Tax Rate</mat-label>
+            <input cdkFocusInitial formControlName="summaryTaxRate" type="number" matInput readonly style="text-align: right;">
+          </mat-form-field>
+          <mat-form-field class="mt-6 flex-auto">
+            <mat-label>Tax Amount</mat-label>
+            <input cdkFocusInitial formControlName="summaryTax" type="number" matInput readonly style="text-align: right;">
+          </mat-form-field>
+        </td>
+      </tr>
+      <tr>
+        <td></td>
+        <td align="right">
+          <mat-form-field class="mt-6 flex-auto">
+            <mat-label>Restocking Fee (%)</mat-label>
+            <input formControlName="restockingFee" type="number" min="0" (change)="handleSummaryOnChangeEvent()" matInput style="text-align: right;">
+          </mat-form-field>
+          <mat-form-field class="mt-6 flex-auto">
+            <mat-label>Restocking Amount</mat-label>
+            <input formControlName="restockingAmount" type="number" matInput readonly style="text-align: right;">
+          </mat-form-field>
+        </td>
+      </tr> -->
+      <tr>
+        <td></td>
+        <td align="right">
+          <mat-form-field class="mt-6 flex-auto">
+            <mat-label>Total</mat-label>
+            <input cdkFocusInitial formControlName="summaryTotal" type="number" matInput readonly style="text-align: right;">
+          </mat-form-field>
+        </td>
+      </tr>
+      <!-- <tr *ngFor="let e of paymentHistoryList">{{ displayPaymentHistory(e) }} </tr> -->
+    </table>
+  </div>
+</form>
+
+<mat-dialog-actions *ngIf="access === userPermission.FullAccess" align="end">
+  <button mat-button type="button" (click)="cancel()">Cancel</button>
+  <button mat-flat-button color="primary" (click)="save()">Create Discount</button>
+</mat-dialog-actions>
+
+<mat-menu #settingsMenu="matMenu" xPosition="before" yPosition="below">
+  <button mat-menu-item>
+    <mat-icon svgIcon="mat:print"></mat-icon>
+    <span>Print</span>
+  </button>
+
+  <button mat-menu-item>
+    <mat-icon svgIcon="mat:download"></mat-icon>
+    <span>Export</span>
+  </button>
+
+  <button mat-menu-item>
+    <mat-icon svgIcon="mat:delete"></mat-icon>
+    <span>Delete</span>
+  </button>
+</mat-menu>

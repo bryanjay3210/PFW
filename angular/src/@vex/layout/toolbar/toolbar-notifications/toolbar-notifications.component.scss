@@ -1,0 +1,26 @@
+.button {
+
+  &.active {
+    background: var(--background-hover);
+  }
+
+  .mat-icon {
+    color: var(--toolbar-icon-color);
+  }
+}
+
+.circle {
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  left: 70%;
+  transform: translate(-10%, -90%);
+  width: 35px;
+  height: 35px;
+  line-height: 35px;
+  border-radius: 50%;
+  font-size: 16px;
+  color: #fff;
+  text-align: center;
+  background: #AC000A;
+}

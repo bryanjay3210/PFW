@@ -1,0 +1,222 @@
+<div id="section-table">
+  <form [formGroup]="form">
+    <vex-page-layout>
+      <vex-page-layout-header class="pb-16 flex flex-col items-start justify-center">
+        <div [class.container]="layoutCtrl.value === 'boxed'" [class.px-gutter]="layoutCtrl.value === 'fullwidth'" class="w-full flex flex-col sm:flex-row justify-between">
+          <div>
+            <h1 class="title mt-0 mb-1">Statement Report</h1>
+            <vex-breadcrumbs [crumbs]="['Menu Tab Module', 'Report Management',  'Statement Report']"></vex-breadcrumbs>
+          </div>
+        </div>
+      </vex-page-layout-header>
+      <vex-page-layout-content [class.container]="layoutCtrl.value === 'boxed'" [class.px-gutter]="layoutCtrl.value === 'fullwidth'" class="-mt-6">
+        <div class="card overflow-auto -mt-16">
+          <div class="bg-app-bar px-6 h-16 border-b sticky left-0 flex items-center">
+            <h2 class="title my-0 ltr:pr-4 rtl:pl-4 ltr:mr-4 rtl:ml-4 ltr:border-r rtl:border-l hidden sm:block flex-none">
+              <span>Statement Report</span>
+            </h2>
+            <div class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+              <input [matDatepicker]="datepickerRef" [max]="todayDate" formControlName="statementDate" (dateChange)="onDateChange()"matInput required placeholder="Statement Date">
+                <mat-datepicker-toggle [for]="datepickerRef" class="block" matSuffix></mat-datepicker-toggle>
+                <mat-datepicker #datepickerRef></mat-datepicker>
+            </div>
+            <div class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+              <input [matDatepicker]="datepickerRef2" [min]="form.get('statementDate').value" formControlName="paymentDueDate" matInput required placeholder="Payment Due Date">
+                <mat-datepicker-toggle [for]="datepickerRef2" class="block" matSuffix></mat-datepicker-toggle>
+                <mat-datepicker #datepickerRef2></mat-datepicker>
+            </div>
+            <span class="flex-1"></span>
+            <div class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+              <mat-icon class="icon-sm text-secondary" svgIcon="mat:location_on"></mat-icon>
+              <mat-select [formControl]="stateCtrl" aria-required="true" class="px-4 py-2 border-0 outline-none w-full bg-transparent"
+                placeholder="State">
+                <mat-option *ngFor="let e of stateList" [value]="e.id">{{ e.name }} </mat-option>
+              </mat-select>
+            </div>
+            <div class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+              <mat-icon class="icon-sm text-secondary" svgIcon="mat:payment"></mat-icon>
+              <mat-select [formControl]="paymentTermCtrl" aria-required="true" class="px-4 py-2 border-0 outline-none w-full bg-transparent"
+                placeholder="Payment Term">
+                <mat-option *ngFor="let e of paymentTermList" [value]="e.id">{{ e.termName }} </mat-option>
+              </mat-select>
+            </div>
+            <div class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+              <mat-icon class="icon-sm text-secondary" svgIcon="mat:search"></mat-icon>
+              <input #product [formControl]="customerFilterCtrl" class="px-4 py-2 border-0 outline-none w-full bg-transparent" 
+                placeholder="Name/Account/Phone Number" type="search" (keyup.enter)="openCustomerList()">
+            </div>
+            <button *ngIf="access === userPermission.FullAccess" (click)="openCustomerList()" class="ml-4 flex-none"
+              color="primary" mat-mini-fab matTooltip="Select Customer" type="button">
+              <mat-icon svgIcon="mat:add"></mat-icon>
+            </button>
+          </div>
+
+          <table @stagger [dataSource]="dataSource" class="w-full" mat-table matSort>
+            <!-- Text Columns -->
+            <ng-container *ngFor="let column of columns;">
+              <ng-container *ngIf="column.type === 'text'" [matColumnDef]="column.property">
+                <th *matHeaderCellDef class="uppercase" mat-header-cell mat-sort-header> {{ column.label }}</th>
+                <td *matCellDef="let row" [ngClass]="column.cssClasses" mat-cell>{{ row[column.property] }}</td>
+              </ng-container>
+            </ng-container>
+
+            <!-- Number Columns -->
+            <ng-container *ngFor="let column of columns;">
+              <ng-container *ngIf="column.type === 'number'" [matColumnDef]="column.property">
+                <th *matHeaderCellDef class="uppercase" mat-header-cell mat-sort-header> {{ column.label }}</th>
+                <div *ngIf="column.property === 'paymentTermId'; else amount">
+                  <td *matCellDef="let row" [ngClass]="column.cssClasses" mat-cell>{{ getPaymentTermName(row[column.property]) }}</td>
+                </div>
+                <ng-template #amount>
+                  <td *matCellDef="let row" mat-cell align="right" style="padding-right: 100px;">${{ formatCurrency(row[column.property]) }}</td>
+                </ng-template>
+              </ng-container>
+            </ng-container>
+
+            <!-- Boolean Column -->
+            <ng-container matColumnDef="validEmail" style="width: 25px;">
+              <th *matHeaderCellDef mat-header-cell mat-sort-header style="width: 25px;">VALID EMAIL</th>
+                <td *matCellDef="let row" mat-cell style="width: 25px;" align="center">
+                  <mat-icon *ngIf="checkValidEmail(row) === true; else invalid" svgIcon="mat:check"></mat-icon>
+                    <ng-template #invalid>
+                      <mat-icon svgIcon="mat:close"></mat-icon>
+                    </ng-template>
+                </td>
+            </ng-container>
+
+            <!-- Action Column -->
+            <ng-container matColumnDef="actions" style="width: 25px;">
+              <th *matHeaderCellDef mat-header-cell mat-sort-header style="width: 25px;">ACTION</th>
+                <td *matCellDef="let row" mat-cell style="width: 25px;" align="center">
+                  <button *ngIf="access === userPermission.FullAccess" (click)="deleteCustomer(row)">
+                    <mat-icon svgIcon="mat:delete" matTooltip="Delete Selected Customer"></mat-icon>
+                  </button>
+                </td>
+            </ng-container>
+
+            <tr *matHeaderRowDef="visibleColumns" mat-header-row></tr>
+            <tr *matRowDef="let row; columns: visibleColumns;"
+                @fadeInUp
+                class="hover:bg-hover trans-ease-out cursor-pointer"
+                mat-row></tr>
+          </table>
+        </div>
+      </vex-page-layout-content>
+    </vex-page-layout>
+  </form>
+  <span style="float: right; padding-right: 50px;">
+    <button *ngIf="access === userPermission.FullAccess" mat-flat-button (click)="clear()" style="margin: 5px;">Clear</button>
+    <button *ngIf="access === userPermission.FullAccess" color="primary" mat-flat-button (click)="print()" style="margin: 5px;">Print</button>
+    <button *ngIf="access === userPermission.FullAccess && selectedCustomerList && this.selectedCustomerList.length > 0" color="primary" mat-flat-button (click)="email()" style="margin: 5px;">Email</button>
+    <!-- <button [disabled]="dataSource.data === undefined || dataSource.data.length === 0" color="primary" mat-flat-button (click)="print()" style="margin: 5px;">Print</button> -->
+  </span>
+  <mat-menu #columnFilterMenu="matMenu" xPosition="before" yPosition="below">
+    <button (click)="toggleColumnVisibility(column, $event)" *ngFor="let column of columns"
+      class="checkbox-item mat-menu-item">
+      <mat-checkbox (click)="$event.stopPropagation()" [(ngModel)]="column.visible" color="primary">
+        {{ column.label }}
+      </mat-checkbox>
+    </button>
+  </mat-menu>
+</div>
+
+<div id="sectionprint" #sectionprint>
+  <body id="section-print">
+    <div id="page" *ngFor="let report of statementReportList">
+      <div id="page-container">
+        <div id="content-wrap">
+          <div *ngIf="report !== undefined" style="padding-bottom: 100px;">
+            <div class="flex-parent">
+              <br>
+              <div class="flex-parent">
+                <div class="flex-child-left">
+                  <div class="flex-child-left" style="padding-left: 20px;">{{report.state === 'CA' ? 'Perfect Fit West
+                    LLC' : 'PartsCo Inc.'}}</div>
+                  <div class="flex-child-left" style="padding-left: 20px;">{{report.state === 'CA' ? '3383 Olive Ave' :
+                    '5151 W Oquendo Rd'}}</div>
+                  <div class="flex-child-left" style="padding-left: 20px;">{{report.state === 'CA' ? 'Signal Hill, CA
+                    90755' : 'Las Vegas, NV 89118'}}</div>
+                  <div class="flex-child-left" style="padding-left: 20px;">{{report.state === 'CA' ? '+1 3109564667' :
+                    '702-998-8888'}}</div>
+                  <div class="flex-child-left" style="padding-left: 20px;">{{report.state === 'CA' ?
+                    'sales@perfectfitwest.com' : 'PartsCoInc.com'}}</div>
+                </div>
+                <div class="flex-child-right">
+                  <img *ngIf="report.state === 'CA'" src="assets/img/pfitwest.png" style="width: 300px; height: 75px;">
+                  <img *ngIf="report.state === 'NV'" src="assets/img/partsco.jpg" style="width: 300px; height: 75px;">
+                </div>
+              </div>
+            </div>
+            <div class="flex-parent">
+              <div class="flex-child-left" style="font-size: xx-large; font-weight: normal; padding-left: 20px;">
+                Statement</div>
+              <div class="flex-child-right">
+                <div class="flex-parent">
+                  <div class="flex-child-right">Payment Due on:&nbsp;</div>
+                  <div class="flex-child-left"> {{ formatDateOnly(form.value.paymentDueDate)}}</div>
+                </div>
+                <div class="flex-parent">
+                  <div class="flex-child-right">Term:&nbsp;</div>
+                  <div class="flex-child-left"> {{ report.paymentTermName }}</div>
+                </div>
+              </div>
+            </div>
+            <div class="flex-parent">
+              <div class="flex-child-left" style="padding-left: 20px;">TO: {{ report.customerName }}</div>
+              <div class="flex-child-right">
+                <div class="flex-parent">
+                  <div class="flex-child-right">ACCOUNT NUMBER:&nbsp;</div>
+                  <div class="flex-child-left"> {{ report.accountNumber }}</div>
+                </div>
+              </div>
+            </div>
+            <div class="flex-parent">
+              <div class="flex-child-left" style="padding-left: 45px;">{{ report.addressLine1 }}</div>
+              <div class="flex-child-right">
+                <div class="flex-parent">
+                  <div class="flex-child-right">DATE:&nbsp;</div>
+                  <div class="flex-child-left"> {{ formatDateOnly(form.value.statementDate)}}</div>
+                </div>
+              </div>
+            </div>
+            <div class="flex-parent">
+              <div class="flex-child-left" style="padding-left: 45px;"> {{ report.city }}, {{ report.state }} {{
+                report.zipCode }} </div>
+              <div class="flex-child-right">
+                <div class="flex-parent">
+                  <div class="flex-child-right">TOTAL DUE:&nbsp;</div>
+                  <div class="flex-child-left"> ${{ formatCurrency(report.totalDue)}}</div>
+                </div>
+              </div>
+            </div>
+            <div class="flex-parent">
+              <div class="flex-child-left" style="padding-left: 45px;">{{ report.phoneNumber }} </div>
+              <div class="flex-child-right">
+                <div class="flex-parent">
+                  <div class="flex-child-right">Amount ENCLOSED </div>
+                  <div class="flex-child-left"></div>
+                </div>
+              </div>
+            </div>
+            <br>
+            <div class="flex-parent-gray">
+              <div class="flex-child-center-100">DATE</div>
+              <div class="flex-child-left-250">REFERENCE</div>
+              <div class="flex-child-left-200">PURCHASE ORDER NUMBER</div>
+              <div class="flex-child-right-100">AMOUNT</div>
+              <div class="flex-child-right-100">BALANCE</div>
+            </div>
+            <div class="flex-parent" *ngFor="let order of report.orders">
+              <div class="flex-child-center-100">{{ formatDateOnly(order.orderDate) }}</div>
+              <div class="flex-child-left-250">{{order.orderType}}:{{ order.orderNumber }}, Invoice:{{ order.invoiceNumber }}</div>
+              <div class="flex-child-left-200">{{ order.purchaseOrderNumber }}</div>
+              <div class="flex-child-right-100">${{ formatCurrency(order.totalAmount) }}</div>
+              <div class="flex-child-right-100">${{ formatCurrency(order.balance) }}</div>
+            </div>
+          </div>
+        </div>
+        <footer id="footer" *ngIf="report !== undefined">Amount Due: ${{ formatCurrency(report.totalDue) }}</footer>
+      </div>
+    </div>
+  </body>
+</div>

@@ -1,0 +1,19 @@
+.overflow-ellipsis {
+    max-width: 90px !important;
+    min-width: 90px !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.overflow-wrap {
+    max-width: 200px !important;
+    min-width: 200px !important;
+    white-space: break-spaces;
+}
+
+.currency-code {
+    position: relative;
+    left: -12px;
+    //top:10px;
+}

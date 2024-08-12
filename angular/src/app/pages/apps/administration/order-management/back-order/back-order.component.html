@@ -1,0 +1,40 @@
+<form [formGroup]="form">
+  <div class="flex items-center" mat-dialog-title>
+    <img [src]="imageDefault" class="avatar-sq mr-5">
+    <h2 class="headline m-0 flex-auto" style="padding-right: 30px;">New Delivery Date</h2>
+    <button class="text-secondary" mat-dialog-close mat-icon-button type="button">
+       <mat-icon svgIcon="mat:close"></mat-icon>
+    </button>
+ </div>
+
+  <mat-divider class="-mx-6 text-border"></mat-divider>
+  <mat-dialog-content class="flex flex-col" style="height: 60px !important;">
+    <div class="flex flex-col sm:flex-row">
+      <mat-form-field class="mt-6 flex-auto">
+        <mat-label>Delivery Date</mat-label>
+        <input [matDatepicker]="datepickerRef" formControlName="deliveryDate" matInput>
+        <mat-datepicker-toggle [for]="datepickerRef" class="block" matSuffix></mat-datepicker-toggle>
+        <mat-datepicker #datepickerRef></mat-datepicker>
+      </mat-form-field>
+      <!-- <mat-form-field class="mt-6 flex-auto" style="width: 100px;">
+        <mat-label>Amount</mat-label>
+        <input formControlName="amountPosted" type="number" matInput required style="text-align: right;">
+      </mat-form-field>
+      <mat-form-field class="flex-auto" style="width: 120px;">
+        <mat-label>Credit Type</mat-label>
+        <mat-select formControlName="creditType" aria-required="true" required>
+          <mat-option *ngFor="let e of creditTypelList" [value]="e.id">{{ e.description }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field class="mt-6 flex-auto">
+        <mat-label>Credit Reason</mat-label>
+        <input formControlName="creditReason" matInput required>
+     </mat-form-field> -->
+    </div>
+  </mat-dialog-content>
+</form>
+<mat-divider class="-mx-6 text-border"></mat-divider>
+<mat-dialog-actions *ngIf="access === userPermission.FullAccess" align="end">
+  <button mat-button mat-dialog-close type="button">Cancel</button>
+  <button color="primary" mat-flat-button (click)="saveBackOrder()">Save</button>
+</mat-dialog-actions>

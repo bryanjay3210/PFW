@@ -1,0 +1,179 @@
+<form (ngSubmit)="save()" [formGroup]="form">
+  <div class="flex items-center" mat-dialog-title>
+    <img [src]="imageDefault" class="avatar-sq mr-5">
+    <h2 *ngIf="form.get('name').value" class="headline m-0 flex-auto">{{ form.get('name').value }} Role & Permissions</h2>
+    <h2 *ngIf="!form.get('name').value" class="headline m-0 flex-auto">New Role & Permissions</h2>
+    <button [matMenuTriggerFor]="settingsMenu" class="text-secondary" mat-icon-button type="button">
+      <mat-icon svgIcon="mat:more_vert"></mat-icon>
+    </button>
+    <button class="text-secondary" mat-dialog-close mat-icon-button type="button">
+      <mat-icon svgIcon="mat:close"></mat-icon>
+    </button>
+  </div>
+
+  <mat-divider class="-mx-6 text-border"></mat-divider>
+
+  <mat-dialog-content class="flex flex-col">
+    <mat-form-field class="mt-6 flex-auto">
+      <mat-label>Role Name</mat-label>
+      <input cdkFocusInitial formControlName="name" matInput required>
+    </mat-form-field>
+    <div class="flex flex-col sm:flex-row">
+      <mat-form-field class="mt-6 flex-auto">
+        <mat-label>Code</mat-label>
+        <input formControlName="code" matInput required>
+      </mat-form-field>
+      <mat-form-field class="sm:mt-6 sm:ml-6 flex-auto">
+        <mat-label>User Type</mat-label>
+        <mat-select formControlName="userTypeId" aria-required="true">
+          <mat-option *ngFor="let ut of userTypeList" [value]="ut.id">{{ ut.name }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+    <mat-form-field class="flex-auto">
+      <mat-label>Description</mat-label>
+      <input formControlName="description" matInput>
+    </mat-form-field>
+    <!-- <div class="flex flex-col sm:flex-row">
+      <mat-form-field class="flex-auto">
+        <mat-label>User Type</mat-label>
+        <mat-select formControlName="userTypeId" aria-required="true">
+          <mat-option *ngFor="let ut of userTypeList" [value]="ut.id">{{ ut.name }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field class="sm:ml-6 flex-auto">
+        <mat-label>Sort Order</mat-label>
+        <input formControlName="sortOrder" type="number" min="0" matInput required>
+      </mat-form-field>
+    </div> -->
+    <mat-form-field class="flex-auto">
+      <mat-label>Notes</mat-label>
+      <textarea formControlName="notes" matInput></textarea>
+    </mat-form-field>
+  </mat-dialog-content>
+
+  <!-- LIST HERE -->
+  <div fxFlex="100" class="mt-5">
+    <div class="mb-3">
+      <span class="form-outline-label fs12">Menu Tab Module</span>
+    </div>
+    <mat-accordion class="custom-accordion" multi>
+      <mat-expansion-panel *ngFor="let moduleGroup of moduleGroupList">
+        <mat-expansion-panel-header [collapsedHeight]="'40px'" [expandedHeight]="'35px;'">
+          <mat-panel-title>
+            <span class="semi-bold fs12 text-dark-70">{{moduleGroup.name}}</span>
+          </mat-panel-title>
+        </mat-expansion-panel-header>
+        <div class="full-width row">
+          <div fxFlex class='modules text-dark-50 semi-bold'>Module Name</div>
+          <div fxFlex="15" class='modules text-dark-50 semi-bold'></div>
+        </div>
+
+        <!-------------------------------------------------------------------------------------------------------------->
+
+        <div class="full-width row" *ngFor="let module of moduleGroup.modules">
+          <!-- <div fxFlex [hidden]="checkModules(module.moduleCode)"> -->
+            <div class="flex flex-col sm:flex-row">
+              <!-- <mat-form-field class="flex-auto">
+                <mat-label>Business Name</mat-label>
+                <input cdkFocusInitial formControlName="customerName" matInput>
+              </mat-form-field> -->
+              <div class="flex-auto">
+                <div>{{module.name}} </div>
+              </div>
+              <mat-form-field class="sm:ml-6 flex-auto">
+                <mat-label>Access Type</mat-label>
+
+                <!-- <mat-select formControlName="customerTypeId" (selectionChange)="onCustomerTypeChange($event)" aria-required="true">
+                  <mat-option *ngFor="let ct of customerTypeList" [value]="ct.id">{{ ct.name }}
+                  </mat-option>
+                </mat-select> -->
+
+                <mat-select placeholder="Choose access type" [(ngModel)]="module.accessTypeId" [ngModelOptions]="{standalone: true}">
+                  <mat-option *ngFor="let accessType of accessTypeList" [value]="accessType.id">
+                    <span>
+                      {{accessType.name}}
+                    </span>
+                  </mat-option>
+                </mat-select>
+                <mat-error class="error-msg">Access Type is Required</mat-error>
+              </mat-form-field>
+            </div>
+
+          <!-- <div fxLayout="row">
+            <div fxFlex="25" fxLayout="row" fxLayoutAlign="start center">
+              <div>{{module.name}} </div>
+            </div>
+
+            <div fxFlex="50">
+              <form class="modules-container">
+                <mat-form-field appearance="outline">
+                  <mat-select placeholder="Choose access type" [(ngModel)]="module.accessTypeId" [ngModelOptions]="{standalone: true}">
+                    <mat-option *ngFor="let accessType of accessTypeList" [value]="accessType.id">
+                      <span>
+                        {{accessType.name}}
+                      </span>
+                    </mat-option>
+                  </mat-select>
+                  <mat-error class="error-msg">Access Type is Required</mat-error>
+                </mat-form-field>
+              </form>
+            </div>
+          </div> -->
+        </div>
+
+        <!-------------------------------------------------------------------------------------------------------------->
+      </mat-expansion-panel>
+    </mat-accordion>
+  </div>
+
+  <!-- <div class="text-left mt-4 max-w-3xl mx-auto">
+    <mat-accordion multi>
+      <mat-expansion-panel *ngFor="let mg of moduleGroupList">
+        <mat-expansion-panel-header>
+          <mat-panel-title>{{ mg.name }}</mat-panel-title>
+          <mat-panel-description>{{ mg.description }}</mat-panel-description>
+        </mat-expansion-panel-header>
+        <mat-action-row>
+          <button mat-button color="primary">Reset</button>
+        </mat-action-row>
+        <div *ngFor="let m of mg.modules" class="flex flex-col sm:flex-row">
+          <div class="sm:mt-6 sm:ml-6 flex-auto" style="width:80%">
+            <mat-label>{{ m.name }}</mat-label>
+          </div>
+          <div class="flex-auto">
+            <mat-form-field appearance="fill">
+              <mat-label>Access Type</mat-label>
+              <select matNativeControl>
+                <option *ngFor="let at of accessTypeList" [value]="at.id">{{ at.name }}</option>
+              </select>
+            </mat-form-field>
+          </div>
+        </div>
+      </mat-expansion-panel>
+    </mat-accordion>
+  </div> -->
+
+  <mat-dialog-actions *ngIf="access === userPermission.FullAccess" align="end">
+    <button mat-button mat-dialog-close type="button">Cancel</button>
+    <button *ngIf="isCreateMode()" color="primary" mat-flat-button (click)="save()">Create Role</button>
+    <button *ngIf="isUpdateMode()" color="primary" mat-flat-button (click)="save()">Update Role</button>
+  </mat-dialog-actions>
+</form>
+
+<mat-menu #settingsMenu="matMenu" xPosition="before" yPosition="below">
+  <button mat-menu-item>
+    <mat-icon svgIcon="mat:print"></mat-icon>
+    <span>Print</span>
+  </button>
+
+  <button mat-menu-item>
+    <mat-icon svgIcon="mat:download"></mat-icon>
+    <span>Export</span>
+  </button>
+
+  <button mat-menu-item>
+    <mat-icon svgIcon="mat:delete"></mat-icon>
+    <span>Delete</span>
+  </button>
+</mat-menu>

@@ -1,0 +1,165 @@
+<form [formGroup]="form">
+   <div class="flex items-center" mat-dialog-title>
+      <img [src]="imageDefault" class="avatar-sq mr-5">
+      <h2 *ngIf="form.get('pickNumber').value" class="headline m-0 flex-auto">Pick Number: {{ form.get('pickNumber').value }}</h2>
+      <h2 *ngIf="!form.get('pickNumber').value" class="headline m-0 flex-auto">New Parts Picking</h2>
+
+      <button [matMenuTriggerFor]="settingsMenu" class="text-secondary" mat-icon-button type="button">
+         <mat-icon svgIcon="mat:more_vert"></mat-icon>
+      </button>
+      <button class="text-secondary" mat-dialog-close mat-icon-button type="button">
+         <mat-icon svgIcon="mat:close"></mat-icon>
+      </button>
+   </div>
+
+   <mat-divider class="-mx-6 text-border"></mat-divider>
+
+   <mat-dialog-content class="flex flex-col" style="height: 1500px !important;">
+      <!-- <div class="flex flex-col sm:flex-row">
+        <mat-form-field class="sm:mt-6 sm:ml-6 flex-auto">
+          <mat-label>Vendor Name</mat-label>
+          <mat-select [disabled]="isUpdateMode()" formControlName="vendorName" aria-required="true" (selectionChange)="getVendorDetails($event)">
+            <mat-option *ngFor="let e of vendorList" [value]="e.id" style="text-align: center;">{{ e.vendorName }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field class="mt-6 flex-auto">
+          <mat-label>Vendor Code</mat-label>
+          <input formControlName="vendorCode" matInput required readonly>
+        </mat-form-field>
+        <mat-form-field class="mt-6 flex-auto">
+          <mat-label>Vendor PO</mat-label>
+          <input formControlName="vendorPO" matInput>
+        </mat-form-field>
+        <mat-form-field class="mt-6 flex-auto">
+          <mat-label>PFW BNumber</mat-label>
+          <input formControlName="pfwbNumber" matInput readonly>
+        </mat-form-field>
+       </div>
+      
+       <mat-divider class="-mx-6 text-border"></mat-divider> -->
+
+       <!---------------------------------------------------------------------------------------------------------------------------------------------------------------->
+      <table @stagger [dataSource]="dataSource" class="w-full" mat-table matSort>
+        <!-- Action Column -->
+        <ng-container *ngIf="isUpdateMode()" matColumnDef="actions" >
+          <th *matHeaderCellDef mat-header-cell mat-sort-header>ACTION</th>
+          <td *matCellDef="let row" class="w-10 text-secondary" mat-cell>
+            <button *ngIf="access === userPermission.FullAccess && (row.statusId === 1 || row.statusId === 3)" (click)="pickPart($event, row)" style="margin-left: 5px;">
+              <mat-icon svgIcon="mat:done"  matTooltip="Picked at location"></mat-icon>
+            </button>
+            <button *ngIf="access === userPermission.FullAccess && row.statusId === 1" (click)="skipPart($event, row)" style="margin-left: 5px;">
+              <mat-icon svgIcon="mat:close"  matTooltip="Skipped Item"></mat-icon>
+            </button>
+            <button *ngIf="access === userPermission.FullAccess" (click)="deletePartsPickingDetail($event, row)" style="margin-left: 5px;">
+              <mat-icon svgIcon="mat:delete"></mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <!-- Stock Location -->
+        <ng-container matColumnDef="stockLocation" >
+          <th *matHeaderCellDef mat-header-cell mat-sort-header>LOCATION</th>
+          <td *matCellDef="let row" class="w-10 text-secondary" mat-cell>
+            <div *ngIf="row.stockLocation">
+              <mat-select [(value)]="row.stockLocation" (selectionChange)="locationSelectionChange($event, row)">
+                <mat-option *ngFor="let e of row.warehouseLocations" [value]="e.location">{{ (e.warehouseId === 1 ? 'CA' : 'NV') + ' --> ' + e.location + ' ('+ e.quantity + ')' }}</mat-option>
+              </mat-select>
+            </div>
+          </td>
+        </ng-container>
+      
+        <!-- Checkbox Column -->
+        <ng-container matColumnDef="checkbox">
+          <th *matHeaderCellDef mat-header-cell>
+            <mat-checkbox (change)="$event ? masterToggle() : null" [checked]="selection.hasValue() && isAllSelected()"
+              [indeterminate]="selection.hasValue() && !isAllSelected()" color="primary">
+            </mat-checkbox>
+          </th>
+          <td *matCellDef="let row" class="w-4" mat-cell>
+            <mat-checkbox (change)="$event ? selection.toggle(row) : null" (click)="$event.stopPropagation()"
+              [checked]="selection.isSelected(row)" color="primary">
+            </mat-checkbox>
+          </td>
+        </ng-container>
+      
+        <!-- Text Columns -->
+        <ng-container *ngFor="let column of columns; trackBy: trackByProperty">
+          <ng-container *ngIf="column.type === 'text'" [matColumnDef]="column.property">
+            <th *matHeaderCellDef class="uppercase" mat-header-cell mat-sort-header> {{ column.label }}</th>
+            <div *ngIf="column.property === 'createdDate' || column.property === 'orderDate'; else isNotDate">
+              <td *matCellDef="let row" mat-cell>
+                <ng-container>{{ formatDate(row[column.property]) }} </ng-container>
+              </td>
+            </div>
+            <ng-template #isNotDate>
+              <div
+                *ngIf="column.property === 'partDescription' || column.property === 'customerName'; else isNotOverflow">
+                <td *matCellDef="let row" mat-cell class="overflow-wrap">
+                  <ng-container>{{ row[column.property] }} </ng-container>
+                </td>
+              </div>
+              <ng-template #isNotOverflow>
+                <td *matCellDef="let row" mat-cell>
+                  <ng-container>{{ row[column.property] }} </ng-container>
+                </td>
+              </ng-template>
+            </ng-template>
+          </ng-container>
+        </ng-container>
+      
+      
+        <!-- Wholesale Price Column -->
+        <!-- <ng-container matColumnDef="vendorPrice" style="width: 50px;">
+          <th *matHeaderCellDef mat-header-cell mat-sort-header style="width: 50px;">VENDOR PRICE</th>
+          <td *matCellDef="let row" mat-cell>
+            <div align="right" class="currency-wrap">
+              <span class="currency-code">$</span>
+              <input class="span-column" type="number" min="0" style="width: 70px; margin-left: -10px;"
+                [value]="formatCurrency(row.vendorPrice)" (change)="handleVendorPriceOnChangeEvent(row, $event)"
+                onkeydown="return event.key != 'Enter';">
+            </div>
+          </td>
+        </ng-container> -->
+      
+        <!-- Number Columns -->
+        <ng-container *ngFor="let column of columns; trackBy: trackByProperty">
+          <ng-container *ngIf="column.type === 'number'"
+            [matColumnDef]="column.property">
+            <th *matHeaderCellDef class="uppercase" mat-header-cell mat-sort-header> {{ column.label }}</th>
+            <td *matCellDef="let row" mat-cell align="center">
+              <ng-container>{{ formatCurrency(row[column.property]) }} </ng-container>
+            </td>
+          </ng-container>
+        </ng-container>
+      
+        <tr *matHeaderRowDef="visibleColumns" mat-header-row></tr>
+        <tr (click)="selectInvoice(row)" *matRowDef="let row; columns: visibleColumns;" @fadeInUp
+          class="hover:bg-hover trans-ease-out cursor-pointer" mat-row></tr>
+      </table>
+
+       <!---------------------------------------------------------------------------------------------------------------------------------------------------------------->
+   </mat-dialog-content>
+  </form>
+
+  <mat-divider class="-mx-6 text-border"></mat-divider>
+
+  <mat-dialog-actions *ngIf="access === userPermission.FullAccess" align="end">
+    <button mat-button mat-dialog-close type="button">Cancel</button>
+    <button *ngIf="isCreateMode()" [disabled]="this.selection.selected.length === 0" color="primary" mat-flat-button (click)="save()">Create Parts Picking</button>
+    <button *ngIf="isUpdateMode()" color="primary" mat-flat-button (click)="save()">Update Parts Picking</button>
+  </mat-dialog-actions>
+
+<mat-menu #settingsMenu="matMenu" xPosition="before" yPosition="below">
+   <button mat-menu-item>
+      <mat-icon svgIcon="mat:print"></mat-icon>
+      <span>Print</span>
+   </button>
+   <button mat-menu-item>
+      <mat-icon svgIcon="mat:download"></mat-icon>
+      <span>Export</span>
+   </button>
+   <button mat-menu-item>
+      <mat-icon svgIcon="mat:delete"></mat-icon>
+      <span>Delete</span>
+   </button>
+</mat-menu>

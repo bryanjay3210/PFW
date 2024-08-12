@@ -1,0 +1,312 @@
+<div id="section-table">
+  <vex-page-layout style="margin-top: -35px;">
+    <!-- <vex-page-layout-header class="pb-16 flex flex-col items-start justify-center">
+  </vex-page-layout-header> -->
+    <vex-page-layout-header class="pb-16 flex flex-col items-start justify-center">
+      <div [class.container]="layoutCtrl.value === 'boxed'" [class.px-gutter]="layoutCtrl.value === 'fullwidth'"
+        class="w-full flex flex-col sm:flex-row justify-between">
+        <div>
+          <!-- <h1 class="title mt-0 mb-1">Orders</h1> -->
+          <vex-breadcrumbs [crumbs]="['Menu Tab Module', 'Administration',  'Orders']"></vex-breadcrumbs>
+        </div>
+      </div>
+    </vex-page-layout-header>
+
+    <vex-page-layout-content style="margin-top: -60px;" [class.container]="layoutCtrl.value === 'boxed'"
+      [class.px-gutter]="layoutCtrl.value === 'fullwidth'" class="-mt-6">
+      <div class="card overflow-auto -mt-16">
+        <div class="bg-app-bar px-6 h-16 border-b sticky left-0 flex items-center">
+          <h2
+            class="title my-0 ltr:pr-4 rtl:pl-4 ltr:mr-4 rtl:ml-4 ltr:border-r rtl:border-l hidden sm:block flex-none">
+            <span *ngIf="selection.isEmpty()">Orders</span>
+            <span *ngIf="selection.hasValue()">{{ selection.selected.length }}
+              Orders<span *ngIf="selection.selected.length > 1">s</span> selected</span>
+          </h2>
+
+          <div *ngIf="selection.hasValue()" class="mr-4 pr-4 border-r flex-none">
+            <button (click)="deleteOrders(selection.selected)" color="primary" mat-icon-button
+              matTooltip="Delete selected" type="button">
+              <mat-icon svgIcon="mat:delete"></mat-icon>
+            </button>
+
+            <button color="primary" mat-icon-button matTooltip="Archive" type="button">
+              <mat-icon svgIcon="mat:folder"></mat-icon>
+            </button>
+          </div>
+
+          <div
+            class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+            <mat-icon class="icon-sm text-secondary" svgIcon="mat:search"></mat-icon>
+            <input [formControl]="orderSearchCtrl" class="px-4 py-2 border-0 outline-none w-full bg-transparent"
+              placeholder="Search..." type="search" (keyup.enter)="searchOrders()">
+          </div>
+          <span *ngIf="!!orderSearchCtrl.value && orderSearchCtrl.value.trim().length > 0">
+            <button (click)="searchOrders()" class="ml-4 flex-none" color="primary" mat-mini-fab
+              matTooltip="Search Orders" type="button">
+              <mat-icon svgIcon="mat:search"></mat-icon>
+            </button>
+          </span>
+
+          <span class="flex-1"></span>
+
+          <button [matMenuTriggerFor]="columnFilterMenu" class="ml-4 flex-none" mat-icon-button
+            matTooltip="Filter Columns" type="button">
+            <mat-icon svgIcon="mat:filter_list"></mat-icon>
+          </button>
+
+          <button *ngIf="access === userPermission.FullAccess" (click)="createOrder()" class="ml-4 flex-none"
+            color="primary" mat-flat-button matTooltip="Place Order" type="button">Place Order</button>
+        </div>
+
+        <table @stagger [dataSource]="orderDataSource" class="w-full" mat-table matSort>
+
+          <!-- Action Column -->
+          <ng-container matColumnDef="actions">
+            <th *matHeaderCellDef mat-header-cell mat-sort-header>ACTION</th>
+            <td *matCellDef="let row" class="w-10 text-secondary" mat-cell>
+              <button (click)="printOrder($event, row)" style="margin-left: -5px; margin-right: 5px;">
+                <mat-icon svgIcon="mat:print"></mat-icon>
+              </button>
+
+              <button *ngIf="getOrderVoidable(row)" (click)="voidOrder($event, row)" style="margin-left: 5px;">
+                <mat-icon svgIcon="mat:not_interested"></mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <!-- Checkbox Column -->
+          <ng-container matColumnDef="checkbox">
+            <th *matHeaderCellDef mat-header-cell>
+              <mat-checkbox (change)="$event ? masterToggle() : null"
+                [checked]="selection.hasValue() && isAllSelected()"
+                [indeterminate]="selection.hasValue() && !isAllSelected()" color="primary">
+              </mat-checkbox>
+            </th>
+            <td *matCellDef="let row" class="w-4" mat-cell>
+              <mat-checkbox (change)="$event ? selection.toggle(row) : null" (click)="$event.stopPropagation()"
+                [checked]="selection.isSelected(row)" color="primary">
+              </mat-checkbox>
+            </td>
+          </ng-container>
+
+          <!-- Image Column -->
+          <ng-container matColumnDef="image">
+            <th *matHeaderCellDef mat-header-cell></th>
+            <td *matCellDef="let row" class="w-8 min-w-8 pr-0" mat-cell>
+              <img [src]="imageDefault" class="avatar h-8 w-8 align-middle">
+            </td>
+          </ng-container>
+
+          <!-- Text Columns -->
+          <ng-container *ngFor="let column of orderColumns; trackBy: trackByProperty">
+            <ng-container *ngIf="column.type === 'text'" [matColumnDef]="column.property">
+              <th *matHeaderCellDef class="uppercase" mat-header-cell mat-sort-header> {{ column.label }}</th>
+              <div *ngIf="column.property === 'orderNumber'">
+                <td *matCellDef="let row" mat-cell>
+                  <ng-container>{{ processOrderNumber(row) }} </ng-container>
+                </td>
+              </div>
+              <div *ngIf="column.property === 'orderStatusName'">
+                <td *matCellDef="let row" mat-cell>
+                  <ng-container>{{ processOrderStatus(row) }} </ng-container>
+                </td>
+              </div>
+              <div *ngIf="column.property === 'isQuote'">
+                <td *matCellDef="let row" mat-cell>
+                  <ng-container>{{ convertIsQuote(row[column.property]) }} </ng-container>
+                </td>
+              </div>
+              <div *ngIf="column.property !== 'isQuote'">
+                <div *ngIf="column.property === 'orderDate'">
+                  <td *matCellDef="let row" mat-cell>
+                    <ng-container>{{ formatDate(row[column.property]) }} </ng-container>
+                  </td>
+                </div>
+                <div *ngIf="column.property !== 'orderDate'">
+                  <td *matCellDef="let row" mat-cell>
+                    <ng-container>{{ row[column.property] }} </ng-container>
+                  </td>
+                </div>
+              </div>
+            </ng-container>
+          </ng-container>
+
+          <!-- Number Columns -->
+          <ng-container *ngFor="let column of orderColumns; trackBy: trackByProperty">
+            <ng-container *ngIf="column.type === 'number'" [matColumnDef]="column.property">
+              <th *matHeaderCellDef class="uppercase" mat-header-cell mat-sort-header> {{ column.label }}</th>
+              <td *matCellDef="let row" mat-cell align="right">
+                <ng-container>{{ formatCurrency(row[column.property]) }} </ng-container>
+              </td>
+            </ng-container>
+          </ng-container>
+
+          <tr *matHeaderRowDef="visibleOrderColumns" mat-header-row></tr>
+          <tr (click)="updateOrder(row)" *matRowDef="let row; columns: visibleOrderColumns;" @fadeInUp
+            class="hover:bg-hover trans-ease-out cursor-pointer" mat-row></tr>
+        </table>
+
+        <mat-paginator style="height: 1px;" [pageSizeOptions]="orderPageSizeOptions" [pageSize]="orderPageSize"
+          class="sticky left-0"></mat-paginator>
+        <mat-paginator [pageSize]="orderPageSize" [pageIndex]="orderPageIndex" [pageSizeOptions]="orderPageSizeOptions"
+          class="sticky left-0" [length]="orderDataCount" [showFirstLastButtons]="true"
+          (page)="onOrderPaginatorClicked($event)"></mat-paginator>
+      </div>
+    </vex-page-layout-content>
+  </vex-page-layout>
+
+  <mat-menu #columnFilterMenu="matMenu" xPosition="before" yPosition="below">
+    <button (click)="toggleOrderColumnVisibility(column, $event)" *ngFor="let column of orderColumns"
+      class="checkbox-item mat-menu-item">
+      <mat-checkbox (click)="$event.stopPropagation()" [(ngModel)]="column.visible" color="primary">
+        {{ column.label }}
+      </mat-checkbox>
+    </button>
+  </mat-menu>
+
+  <mat-menu #actionsMenu="matMenu" xPosition="before" yPosition="below">
+    <ng-template let-order="order" matMenuContent>
+      <button (click)="printOrder($event, order)" mat-menu-item>
+        <mat-icon svgIcon="mat:print"></mat-icon>
+        <span>Print</span>
+      </button>
+      <button (click)="updateOrder(order)" mat-menu-item>
+        <mat-icon svgIcon="mat:edit"></mat-icon>
+        <span>Modify</span>
+      </button>
+      <button (click)="deleteOrder(order)" mat-menu-item>
+        <mat-icon svgIcon="mat:delete"></mat-icon>
+        <span>Delete</span>
+      </button>
+    </ng-template>
+  </mat-menu>
+</div>
+
+<!-- PRINT LAYOUT ------------------------------------------------------------------------------------------------------------------------------------------------------->
+
+<body *ngIf="data" id="section-print" style="margin-top: 20px;">
+  <div class="flex-parent">
+    <div class="flex-child-left">
+      <img src={{data.imagePath}} style="width: 200px;">
+    </div>
+    <div *ngIf="!data.isQuote" class="flex-child-center-fl">
+      <span *ngIf="data.isCreditMemo">PFOS CREDIT MEMO: {{ data.orderNumber}}</span>
+      <span *ngIf="!data.isCreditMemo">PFOS ORDER NUMBER: {{ data.orderNumber}}</span>
+    </div>
+    <div *ngIf="data.isQuote" class="flex-child-center-l">PFOS QUOTE NUMBER: {{ data.quoteNumber}}</div>
+    <div class="flex-child-right">
+      SALES ORDER: {{ data.invoiceNumber}}
+      <div *ngIf="!data.isQuote">
+        <ngx-barcode [bc-value]="data.orderNumber" [bc-height]="25" [bc-width]="2" [bc-margin-left]="50"
+          [bc-display-value]="false"></ngx-barcode>
+      </div>
+    </div>
+  </div>
+  <div class="flex-parent">
+    <div class="flex-child-left">{{ data.address }}</div>
+    <div class="flex-child-right">PRINTED DATE/TIME: {{ formatDate(data.printDate) }}</div>
+  </div>
+  <div class="flex-parent">
+    <div class="flex-child-left">TEL: {{ data.phoneNumber }}</div>
+    <div class="flex-child-right">WEBSITE: {{ data.website}}</div>
+  </div>
+
+  <div class="flex-divider">
+    ___________________________________________________________________________________________________________________
+  </div>
+
+  <div class="flex-parent">
+    <div class="flex-child-left-l">SOLD TO: {{ data.soldTo }}</div>
+    <div class="flex-child-left-l">SHIP TO: {{ data.shipTo }}</div>
+  </div>
+
+  <div class="flex-parent">
+    <div class="flex-child-left-l">{{ data.soldToAddress }}</div>
+    <div class="flex-child-left-l">{{ data.shipToAddress }}</div>
+  </div>
+
+  <div class="flex-parent">
+    <div class="flex-child-left-l">{{ data.soldToAddress2 }}</div>
+    <div class="flex-child-left-l">{{ data.shipToAddress2 }}</div>
+  </div>
+
+  <div class="flex-divider">
+    ___________________________________________________________________________________________________________________
+  </div>
+
+  <div class="flex-parent">
+    <div class="flex-child-center">ACCOUNT</div>
+    <div class="flex-child-center">PHONE</div>
+    <div class="flex-child-center">PO/RO</div>
+    <div class="flex-child-center">TERMS</div>
+    <div class="flex-child-center">SOLD BY</div>
+  </div>
+
+  <div class="flex-parent">
+    <div class="flex-child-center">{{ data.accountNumber}}</div>
+    <div class="flex-child-center">{{ data.customerPhoneNumber }}</div>
+    <div class="flex-child-center">{{ data.purchaseOrderNumber }}</div>
+    <div class="flex-child-center">{{ data.customerTerms }}</div>
+    <div class="flex-child-center">{{ data.soldBy }}</div>
+  </div>
+
+  <div class="flex-divider">
+    ___________________________________________________________________________________________________________________
+  </div>
+
+  <div class="flex-parent">
+    <div class="flex-child-center-h-70">QTY</div>
+    <div class="flex-child-center-h-150">ITEM NO</div>
+    <div class="flex-child-center-h">DESCRIPTION-PARTSLINK-LOCATION</div>
+    <div class="flex-child-center-h-70">LIST</div>
+    <div class="flex-child-center-h-70">PRICE</div>
+    <div class="flex-child-center-h-70">EXT</div>
+  </div>
+  <div class="flex-parent-padded" *ngFor="let item of data.lineItems">
+    <div class="flex-child-center-70">{{ item.quantity }}&nbsp;&nbsp;&nbsp;{{ item.quantity }}</div>
+    <div class="flex-child-left-l-150">{{ item.partNumber }}</div>
+    <div class="flex-child-left">{{ item.description }}</div>
+    <div class="flex-child-right-70">{{ item.lprice }}</div>
+    <div class="flex-child-right-70">{{ item.price }}</div>
+    <div class="flex-child-right-70">{{ item.extPrice }}</div>
+  </div>
+
+  <div>TOTAL QUANTITY: {{ data.totalQuantity }}</div>
+  <div class="flex-parent">
+    <div class="flex-child-left">NOTES: {{ data.notes}}</div>
+  </div>
+
+  <div class="flex-parent">
+    <div class="flex-child-left">ORDERED BY: {{ data.orderedBy}}</div>
+    <div class="flex-child-left">PHONE: {{ data.orderedByPhone}}</div>
+  </div>
+
+  <div class="flex-parent">
+    <div class="flex-child-left">RECEIVED BY: _______________________</div>
+    <div class="flex-child-left">PAYMENT TYPE: _______________________</div>
+  </div>
+
+  <div style="font-size: large; font-weight: bolder;">{{data.orderType }} {{ data.zone }}</div>
+
+  <div class="flex-parent">
+    <!-- <div class="flex-child-left">{{ data.vendorCode }}</div> -->
+    <div class="flex-child-left">EXPECTED DELIVERY DATE: {{ data.deliveryDate }}</div>
+    <div class="flex-child-right-l-100">SUB TOTAL:</div>
+    <div class="flex-child-right-l-75">{{ data.subTotal }}</div>
+  </div>
+
+  <div class="flex-parent">
+    <div class="flex-child-left">{{ data.staticText1 }}</div>
+    <div class="flex-child-right-l-100">TAX:</div>
+    <div class="flex-child-right-l-75">{{ data.tax }}</div>
+  </div>
+
+  <div class="flex-parent">
+    <div class="flex-child-left">{{ data.staticText2 }}</div>
+    <div class="flex-child-right-l-100">TOTAL:</div>
+    <div class="flex-child-right-l-75">{{ data.total }}</div>
+  </div>
+
+  <!-- <div align="center" class="footer" id="page-number"></div> -->
+</body>
+<!-- PRINT LAYOUT ------------------------------------------------------------------------------------------------------------------------------------------------------->

@@ -1,0 +1,122 @@
+<body>
+    <button (click)="printInvoice()">PRINT</button>
+    <table>
+        <tr>
+            <td align="left"><img src="https://perfectfitwest.com/images/logo-pf.gif" style="width: 200px;"></td>
+            <td align="center">PFOS ORDER NUMBER: {{ data.orderNumber}}</td> 
+            <td align="right">SALES ORDER: {{ data.invoiceNumber}}</td>
+        </tr>
+    </table>
+    <table>
+        <tr>
+            <td align="left">{{ data.address }}</td>
+            <td align="right">PRINTED DATE/TIME: {{ data.printDate }}</td>
+        </tr>
+    </table>
+    <table>
+        <tr>
+            <td align="left">TEL: {{ data.phoneNumber }}</td>
+            <td align="right">WEBSITE: {{ data.website}}</td> 
+            <!-- <td align="right">PAGE {{data.page}} OF {{data.pages}}</td> -->
+        </tr>    
+    </table>
+    
+    <table>
+        <tr>
+            <td align="left" style="font-size: large;">SOLD TO: {{ data.soldTo }}</td>
+            <td align="left" style="font-size: large;">SHIP TO: {{ data.shipTo }}</td>
+        </tr>
+        <tr>
+            <td align="left" style="font-size: large;">{{ data.soldToAddress }}</td>
+            <td align="left" style="font-size: large;">{{ data.shipToAddress }}</td>
+        </tr>
+    </table>
+    
+    <table>
+        <tr>
+            <td align="center" style="width: 20%;">ACCOUNT</td>
+            <td align="center" style="width: 20%;">PHONE</td>
+            <td align="center" style="width: 20%;">PO/RO</td>
+            <td align="center" style="width: 20%;">TERMS</td>
+            <td align="center" style="width: 20%;">SOLD BY</td>
+        </tr>
+        <tr>
+            <td align="center" style="width: 20%;">{{ data.accountNumber}}</td>
+            <td align="center" style="width: 20%;">{{ data.customerPhoneNumber }}</td>
+            <td align="center" style="width: 20%;">{{ data.purchaseOrderNumber }}</td>
+            <td align="center" style="width: 20%;">{{ data.customerTerms }}</td>
+            <td align="center" style="width: 20%;">{{ data.soldBy }}</td>
+        </tr>
+    </table>
+    <br>
+    <table>
+        <th align="center" style="width: auto;">QTY</th>
+        <th align="center" style="width: 20%;">ITEM NO</th>
+        <th align="center" style="width: 45%;">DESCRIPTION-PARTSLINK-LOCATION</th>
+        <th align="center" style="width: auto;">LIST PRICE</th>
+        <th align="center" style="width: auto;">PRICE</th>
+        <th align="center" style="width: auto">EXT PRICE</th>
+    </table>
+    <table style="margin-top: 20px;">
+        <tr *ngFor="let item of data.lineItems">
+            <td style="width: auto; vertical-align: top;" align="center" >{{ item.quantity }}&nbsp;&nbsp;&nbsp;{{ item.quantity }}</td>
+            <td style="width: 20%; vertical-align: top; font-size: large;">{{ item.partNumber }}</td>
+            <td style="width: 45%; vertical-align: top;">{{ item.description }}</td>
+            <td style="width: auto; vertical-align: top; font-size: large;" align="center">{{ item.lprice }}</td>
+            <td style="width: auto; vertical-align: top; font-size: large;" align="center">{{ item.price }}</td>
+            <td style="width: auto; vertical-align: top; font-size: large;" align="center">{{ item.extPrice }}</td>
+        </tr>
+    </table>
+    <div>TOTAL QUANTITY: {{ data.totalQuantity }}</div>
+    <table>
+        <br>
+        <tr>
+            <td align="left">NOTES: {{ data.notes}}</td>
+        </tr>
+        <tr>
+            <td align="left">ORDERED BY: {{ data.orderedBy}}</td>
+            <td align="left">PHONE: {{ data.orderedByPhone}}</td>
+        </tr>
+        
+        <tr>
+            <td align="left">RECEIVED BY: ______________________________</td>
+            <td align="left">PAYMENT TYPE: ______________________________</td>
+        </tr>
+    </table>
+    <div style="font-size: larger; font-weight: bolder;">DELIVERY {{ data.zone }}</div>
+    <table>
+        <tr>
+            <td align="left">{{ data.vendorCode }}</td>
+            <td align="right">
+                <tr>
+                    <td style="font-size: large;">SUB TOTAL:</td>
+                    <td style="width: 75px; float: right; font-size: large;">{{ data.subTotal }}</td>
+                </tr>
+            </td>
+        </tr>
+        <tr>
+            <td align="left">EXPECTED DELIVERY DATE: {{ data.deliveryDate }}</td>
+            <td align="right">
+                <tr>
+                    <td style="font-size: large;">TAX:</td>
+                    <td style="width: 75px; float: right; font-size: large;">{{ data.tax }}</td>
+                </tr>
+            </td>
+        </tr>
+    </table>
+    <table>
+        <tr>
+            <td align="left" style="width: 70%;">{{ data.staticText1 }}</td>
+            <td align="right" style="width: 30%;">
+                <tr>
+                    <td style="font-size: large;">TOTAL:</td>
+                    <td style="width: 75px; float: right; font-size: large;">{{ data.total }}</td>
+                </tr>
+            </td>
+        </tr>
+        <tr>
+            <td align="left">{{ data.staticText2 }}</td>
+            <td align="right"></td>
+        </tr>
+    </table>
+</body>

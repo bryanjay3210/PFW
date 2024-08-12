@@ -1,0 +1,222 @@
+@import "~simplebar/dist/simplebar.css";
+@import "~highlight.js/styles/androidstudio.css";
+// Vex Core
+@import "./@vex/styles/core";
+
+/*
+  You can override any CSS Variable or style here
+  Example:
+
+  :root {
+   --sidenav-background: #333333;
+  }
+
+  All possible variables can be found in @vex/styles/core or by simply inspecting the element you want to change
+  in Chrome/Firefox DevTools
+*/
+
+/**
+  Uncomment the below code and adjust the values to fit your colors, the application will automatically adjust
+ */
+// :root {
+//   // --color-primary: blue;
+//   // --color-primary-contrast: white;
+
+//   // --color-accent: yellow;
+//   // --color-accent-contrast: black;
+
+//   // --color-warn: yellow;
+//   // --color-warn-contrast: black;
+// }
+
+// UI Overrides
+.avatar-sq {
+  margin-top: var(--padding-4);
+  height: 40px;
+  width: 40px;
+
+  &:last-child {
+    margin-right: 0;
+  }
+}
+
+.activeRow {
+  background-color: antiquewhite;
+}
+
+.inactiveRow {
+  opacity: 50%;
+}
+
+.outOfStockRow {
+  background-color: red;
+}
+
+.creditMemoRow {
+  background-color: red;
+  opacity: 75%;
+}
+
+.creditMemoRow:hover {
+  background-color: red;
+  opacity: 75%;
+}
+
+.discountRow {
+  background-color: green;
+  opacity: 75%;
+}
+
+.rgaRow {
+  background-color: yellow;
+  opacity: 75%;
+}
+
+.rgaRowPartial {
+  background-color: lightyellow;
+  opacity: 75%;
+}
+
+.customerDeletedRow {
+  background-color: lightgray
+}
+
+
+mat-form-field {
+  margin: 5px !important;
+  height: 35px !important;
+}
+
+mat-radio-group {
+  margin: 5px !important;
+  height: 35px !important;
+}
+
+.mat-form-field-appearance-fill .mat-form-field-flex {
+  padding: 2px !important;
+  height: 35px !important;
+}
+
+.block-ui {
+  font-size: xx-large !important;
+  opacity: 75% !important;
+}
+
+.tooltipstock {
+  position: relative;
+  vertical-align: middle;
+  border-bottom: 1px dotted black;
+}
+
+.tooltipstock .tooltipstocktext {
+  visibility: hidden;
+  width: 120px;
+  background-color: #000; //#555;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px 0;
+  position: absolute;
+  z-index: 1;
+  bottom: 65%;
+  left: -150%;
+  //margin-left: -60px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.tooltipstock .tooltipstocktext::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #555 transparent transparent transparent;
+}
+
+.tooltipstock:hover .tooltipstocktext {
+  visibility: visible;
+  opacity: 1;
+}
+
+.tooltipTracking {
+  position: relative;
+  display: inline-block;
+  border-bottom: 1px dotted black;
+
+  vertical-align: middle;
+}
+
+.tooltipTracking .tooltipTrackingtext {
+  visibility: hidden;
+  width: 120px;
+  background-color: #000; //#555;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px 0;
+  position: absolute;
+  //z-index: 1;
+  bottom: 5%;
+  left: 100%;
+  //margin-left: -60px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.tooltipTracking .tooltipTrackingtext::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #555 transparent transparent transparent;
+}
+
+.tooltipTracking:hover .tooltipTrackingtext {
+  visibility: visible;
+  opacity: 1;
+}
+
+.tooltip {
+  position: relative;
+  vertical-align: middle;
+  border-bottom: 1px dotted black;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  //width: 120px;
+  background-color: #000; //#555;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px 0;
+  position: absolute;
+  z-index: 1;
+  bottom: 70%;
+  left: -20%;
+  //margin-left: -60px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.tooltip .tooltiptext::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #555 transparent transparent transparent;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  opacity: 1;
+}

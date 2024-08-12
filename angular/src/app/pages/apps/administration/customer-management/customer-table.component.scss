@@ -1,0 +1,21 @@
+
+
+.mat-table {
+    width: 100%;
+    table-layout: fixed;
+  }
+  
+  th, td {
+    overflow: hidden;
+    width:auto;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .mat-column-checkbox{
+    width: 16px !important;
+  }
+
+  .vex-page-layout-header{
+    padding-bottom: 2rem !important;
+  }

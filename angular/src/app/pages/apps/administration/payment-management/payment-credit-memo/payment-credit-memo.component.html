@@ -1,0 +1,145 @@
+<form *ngIf="form" [formGroup]="form" (keydown.enter)="$event.preventDefault()">
+  <div class="flex items-center" mat-dialog-title>
+    <img [src]="imageDefault" class="avatar-sq mr-5">
+    <h2 *ngIf="!currentCustomer" class="headline m-0 flex-auto">
+      <span style="font-size: large; float: left;"><b>CUSTOMERS: </b>{{ customerNames }}</span>
+      <span style="font-size: large; float: right; border-color: aqua; padding-right: 50px;">Total amount selected: ${{ formatCurrency(totalAmount) }}</span>
+    </h2>
+    <h2 *ngIf="currentCustomer" class="headline m-0 flex-auto">
+      <span style="font-size: large; float: left;"><b>CUSTOMER: </b>{{ currentCustomer.customerName }}</span>
+      <span style="font-size: large; float: right; border-color: aqua; padding-right: 50px;">Total amount selected: ${{ formatCurrency(totalAmount) }}</span>
+    </h2>
+    <button [matMenuTriggerFor]="settingsMenu" class="text-secondary" mat-icon-button type="button">
+      <mat-icon svgIcon="mat:more_vert"></mat-icon>
+    </button>
+    <button class="text-secondary" mat-icon-button type="button" (click)="cancel()">
+      <mat-icon svgIcon="mat:close"></mat-icon>
+    </button>
+  </div>
+  <mat-divider class="-mx-6 text-border"></mat-divider>
+  <mat-divider class="-mx-6 text-border"></mat-divider>
+  <mat-dialog-content class="flex flex-col" style="height: 500px !important;">
+    <!--TABLE--------------------------------------------------------------------------------------------->
+    <table @stagger [dataSource]="dataSource" class="w-full" mat-table matSort (matSortChange)="sortDataMatTable($event)">
+      <!-- Checkbox Column -->
+      <ng-container matColumnDef="checkbox">
+        <th *matHeaderCellDef mat-header-cell>
+          <mat-checkbox (change)="$event ? masterToggle() : null" [checked]="selection.hasValue() && isAllSelected()"
+            [indeterminate]="selection.hasValue() && !isAllSelected()" color="primary">
+          </mat-checkbox>
+        </th>
+        <td *matCellDef="let row" class="w-4" mat-cell>
+          <mat-checkbox (change)="$event ? selection.toggle(row) : null" (click)="$event.stopPropagation()"
+            [checked]="selection.isSelected(row)" color="primary">
+          </mat-checkbox>
+        </td>
+      </ng-container>
+
+      <!-- Image Column -->
+      <ng-container matColumnDef="image">
+        <th *matHeaderCellDef mat-header-cell></th>
+        <td *matCellDef="let row" class="w-8 min-w-8 pr-0" mat-cell>
+          <img [src]="imageDefault" class="avatar h-8 w-8 align-middle">
+        </td>
+      </ng-container>
+
+      <!-- Text Columns -->
+      <ng-container *ngFor="let column of orderColumns; trackBy: trackByProperty">
+        <ng-container *ngIf="column.type === 'text'" [matColumnDef]="column.property">
+          <th *matHeaderCellDef class="uppercase" mat-header-cell mat-sort-header> {{ column.label }}</th>
+          <div *ngIf="column.property === 'isQuote'">
+            <td *matCellDef="let row" mat-cell>
+              <ng-container>{{ convertIsQuote(row[column.property]) }} </ng-container>
+            </td>
+          </div>
+          <div *ngIf="column.property !== 'isQuote'">
+            <div *ngIf="column.property === 'orderDate'">
+              <td *matCellDef="let row" mat-cell>
+                <ng-container>{{ formatDate(row[column.property]) }} </ng-container>
+              </td>
+            </div>
+            <div *ngIf="column.property !== 'orderDate'">
+              <td *matCellDef="let row" mat-cell>
+                <ng-container>{{ row[column.property] }} </ng-container>
+              </td>
+            </div>
+          </div>
+        </ng-container>
+      </ng-container>
+
+      <!-- Number Columns -->
+      <ng-container *ngFor="let column of orderColumns; trackBy: trackByProperty">
+        <ng-container *ngIf="column.type === 'number'" [matColumnDef]="column.property">
+          <th *matHeaderCellDef class="uppercase" mat-header-cell mat-sort-header> {{ column.label }}</th>
+          <td *matCellDef="let row" mat-cell align="center">
+            <ng-container>{{ formatCurrency(row[column.property]) }} </ng-container>
+          </td>
+        </ng-container>
+      </ng-container>
+
+      <tr *matHeaderRowDef="visibleOrderColumns" mat-header-row></tr>
+      <tr *matRowDef="let row; columns: visibleOrderColumns;" @fadeInUp class="hover:bg-hover trans-ease-out cursor-pointer" mat-row
+          (click)="selectCreditMemo(row)"></tr>
+    </table>
+    <!--TABLE--------------------------------------------------------------------------------------------->
+
+    <mat-paginator [pageSize]="pageSize" [pageIndex]="pageIndex" [pageSizeOptions]="pageSizeOptions"
+      class="sticky left-0" [length]="dataCount" [showFirstLastButtons]="true"
+      (page)="onOrderPaginatorClicked($event)"></mat-paginator>
+  </mat-dialog-content>
+</form>
+<mat-divider class="-mx-6 text-border"></mat-divider>
+<mat-divider class="-mx-6 text-border"></mat-divider>
+<form *ngIf="form && currentCustomer !== undefined && refundSelected" [formGroup]="form">
+  <div class="flex flex-col sm:flex-row">
+    <mat-form-field class="mt-6 flex-auto">
+      <mat-label>Refund Type</mat-label>
+      <mat-select formControlName="paymentType" aria-required="true" (valueChange)="paymentTypeValueChange($event)" required>
+        <mat-option *ngFor="let e of paymentTypeList" [value]="e.termName">{{ e.termName }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field *ngIf="!isCashOrCreditSelected" class="mt-6" style="width: 200px;">
+      <mat-label>Reference Number</mat-label>
+      <input formControlName="referenceNumber" matInput required>
+    </mat-form-field>
+    
+    <mat-form-field class="mt-6 flex-auto">
+      <mat-label>Refund Amount Due</mat-label>
+      <input formControlName="totalAmountDue" matInput required readonly>
+    </mat-form-field>
+    <mat-form-field class="mt-6 flex-auto">
+      <mat-label>Refund Amount</mat-label>
+      <input formControlName="paymentAmount" (change)="getTotalAmountSelected()" (keyup.enter)="getTotalAmountSelected()" type="number" matInput required readonly>
+    </mat-form-field>
+    <mat-form-field class="sm:mt-6 sm:ml-6 flex-auto">
+      <mat-label>Refund Balance</mat-label>
+      <input formControlName="paymentBalance" matInput required readonly>
+    </mat-form-field>
+  </div>
+  <br>
+  <mat-divider class="-mx-6 text-border"></mat-divider>
+</form>
+
+<mat-dialog-actions *ngIf="access === userPermission.FullAccess" align="end">
+  <button *ngIf="!refundSelected" mat-button type="button" (click)="cancel()">Cancel</button>
+  <button *ngIf="refundSelected" mat-button type="button" (click)="cancel()">Cancel Refund</button>
+  <button *ngIf="refundSelected" [disabled]="disableSaveRefund()" mat-flat-button color="primary" (click)="saveRefund()">Create Refund</button>
+  <button *ngIf="!refundSelected && currentCustomer" mat-flat-button color="primary" [disabled]="this.selection.selected.length === 0 || refundSelected" (click)="refundCreditMemo()">Refund Credit Memo(s)</button>
+  <button mat-flat-button color="primary" [disabled]="disableApplyCredit()" (click)="applyCreditMemo()">Apply Credit Memo(s)</button>
+</mat-dialog-actions>
+
+<mat-menu #settingsMenu="matMenu" xPosition="before" yPosition="below">
+  <button mat-menu-item>
+    <mat-icon svgIcon="mat:print"></mat-icon>
+    <span>Print</span>
+  </button>
+  <button mat-menu-item>
+    <mat-icon svgIcon="mat:download"></mat-icon>
+    <span>Export</span>
+  </button>
+  <button mat-menu-item>
+    <mat-icon svgIcon="mat:delete"></mat-icon>
+    <span>Delete</span>
+  </button>
+</mat-menu>

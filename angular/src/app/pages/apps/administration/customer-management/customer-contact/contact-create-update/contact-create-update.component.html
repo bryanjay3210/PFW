@@ -1,0 +1,84 @@
+<form (ngSubmit)="save()" [formGroup]="form">
+  <div class="flex items-center" mat-dialog-title>
+    <img [src]="imageDefault" class="avatar-sq mr-5">
+    <h2 *ngIf="form.get('contactName').value" class="headline m-0 flex-auto">{{ form.get('contactName').value }}</h2>
+    <h2 *ngIf="!form.get('contactName').value" class="headline m-0 flex-auto">New Contact</h2>
+    <button [matMenuTriggerFor]="settingsMenu" class="text-secondary" mat-icon-button type="button">
+      <mat-icon svgIcon="mat:more_vert"></mat-icon>
+    </button>
+    <button class="text-secondary" mat-dialog-close mat-icon-button type="button">
+      <mat-icon svgIcon="mat:close"></mat-icon>
+    </button>
+  </div>
+
+  <mat-divider class="-mx-6 text-border"></mat-divider>
+
+  <mat-dialog-content class="flex flex-col">
+    <div class="flex flex-col sm:flex-row">
+      <mat-form-field class="mt-6 flex-auto">
+        <mat-label>Position</mat-label>
+        <mat-select cdkFocusInitial formControlName="positionTypeId" aria-required="true">
+          <mat-option *ngFor="let pt of positionTypeList" [value]="pt.id">{{ pt.name }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field class="sm:mt-6 sm:ml-6 flex-auto">
+        <mat-label>Location</mat-label>
+        <mat-select formControlName="locationId" aria-required="true">
+          <mat-option *ngFor="let l of locationList" [value]="l.id">{{ l.locationName }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+    <mat-form-field class="flex-auto">
+      <mat-label>Contact Name</mat-label>
+      <input formControlName="contactName" matInput>
+    </mat-form-field>
+    <div class="flex flex-col sm:flex-row">
+      <mat-form-field class="mt-6 flex-auto">
+        <mat-label>Phone Number</mat-label>
+        <input formControlName="phoneNumber" matInput>
+      </mat-form-field>
+      <mat-form-field class="sm:mt-6 sm:ml-6 flex-auto">
+        <mat-label>Email</mat-label>
+        <input formControlName="email" matInput>
+      </mat-form-field>
+    </div>
+    <mat-form-field class="flex-auto">
+      <mat-label>Notes</mat-label>
+      <input formControlName="notes" matInput>
+    </mat-form-field>
+  </mat-dialog-content>
+
+  <div class="flex-auto">
+    <mat-slide-toggle #creditSlider color="primary" labelPosition="after" (change)="setEmailCreditMemo($event)"
+      [checked]="isEmailCreditMemo">Auto-Receive Credit Memo Email</mat-slide-toggle>
+  </div>
+  <div class="flex-auto">
+    <mat-slide-toggle #orderSlider color="primary" labelPosition="after" (change)="setEmailOrder($event)"
+      [checked]="isEmailOrder">Auto-Receive Order Email</mat-slide-toggle>
+  </div>
+  <div class="flex-auto">
+    <mat-slide-toggle #statementSlider color="primary" labelPosition="after" (change)="setEmailStatement($event)"
+      [checked]="isEmailStatement">Auto-Receive Statement Email</mat-slide-toggle>
+  </div>
+  
+  <mat-dialog-actions *ngIf="access === userPermission.FullAccess || (access === userPermission.ViewAccess && isFromOrder)" align="end">
+    <button mat-button mat-dialog-close type="button">Cancel</button>
+    <button *ngIf="isCreateMode()" color="primary" mat-flat-button (click)="save()">Create Contact</button>
+    <button *ngIf="isUpdateMode()" color="primary" mat-flat-button (click)="save()">Update Contact</button>
+  </mat-dialog-actions>
+</form>
+
+<mat-menu #settingsMenu="matMenu" xPosition="before" yPosition="below">
+  <button mat-menu-item>
+    <mat-icon svgIcon="mat:print"></mat-icon>
+    <span>Print</span>
+  </button>
+  <button mat-menu-item>
+    <mat-icon svgIcon="mat:download"></mat-icon>
+    <span>Export</span>
+  </button>
+  <button mat-menu-item>
+    <mat-icon svgIcon="mat:delete"></mat-icon>
+    <span>Delete</span>
+  </button>
+</mat-menu>

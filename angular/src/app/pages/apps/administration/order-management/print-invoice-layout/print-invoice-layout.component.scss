@@ -1,0 +1,112 @@
+.header,
+.header-space {
+    height: 10px;
+}
+
+.footer,
+.footer-space {
+    height: 40px;
+    align-self: center;
+}
+
+.header {
+    position: fixed;
+    top: 0;
+}
+
+// .content {
+//     height: 100%;
+// }
+
+.footer {
+    position: fixed;
+    bottom: 0;
+    align-self: center;
+}
+
+body {
+    font-family: Tahoma;
+    font-size: medium;
+    page-break-after: always;
+    
+    height: 100%;
+    overflow-y: visible;
+    overflow-x: visible;
+}
+
+table {
+    width: 100%;
+    table-layout: fixed;
+}
+
+td {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-wrap: break-word;
+}
+
+* {
+    overflow: visible !important;
+}
+
+.page {
+    page-break-after: always;
+}
+
+
+// @media screen {
+//     :host {
+//         display: none;
+//     }
+// }
+
+// @media print {
+//     app-root>* {
+//         display: none;
+//     }
+
+//     app-root app-print-layout {
+//         display: block;
+//     }
+// }
+
+// body {
+//     font-family: Tahoma;
+//     font-size: medium;
+// }
+
+// table { 
+//     width: 100%;
+//     table-layout:fixed;
+// }
+
+// td { 
+//     overflow: hidden; 
+//     text-overflow: ellipsis; 
+//     word-wrap: break-word;
+// }
+
+#page-number {
+    display: table-footer-group;
+}
+
+#page-number:after {
+    font-family: Tahoma;
+    font-size: medium;
+    counter-increment: page;
+    //content: counter(page);
+    content: "Page " counter(page) " of " counter(totalPages);
+}
+
+// #content {
+//     display: table;
+// }
+
+// #pageFooter {
+//     display: table-header-group;
+// }
+
+// #pageFooter:after {
+//     counter-increment: page;
+//     content: counter(page);
+// }

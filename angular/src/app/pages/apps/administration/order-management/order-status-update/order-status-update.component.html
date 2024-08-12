@@ -1,0 +1,51 @@
+<div>
+  <div class="flex items-center" mat-dialog-title>
+    <img [src]="imageDefault" class="avatar-sq mr-5">
+    <h2 class="headline m-0 flex-auto">Order {{ defaults.orderNumber}}</h2>
+    <button class="text-secondary" mat-dialog-close mat-icon-button type="button">
+      <mat-icon svgIcon="mat:close"></mat-icon>
+    </button>
+  </div>
+  <mat-divider class="-mx-6 text-border"></mat-divider>
+  <mat-dialog-content class="flex flex-col">
+    <div class="flex flex-col sm:flex-row">
+      <div class="bg-foreground rounded-full border px-4 max-w-[200px] flex-auto flex items-center border border-gray-300">
+        <mat-icon class="icon-sm text-secondary" svgIcon="mat:flight_takeoff"></mat-icon>
+        <input #carrier [formControl]="carrierCtrl" class="px-4 py-2 border-0 outline-none w-full bg-transparent"
+          placeholder="Enter Carrier" type="search" (keyup.enter)="carrierEntered($event)">
+      </div>
+      <div class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+        <mat-icon class="icon-sm text-secondary" svgIcon="mat:find_replace"></mat-icon>
+        <input #tracking [formControl]="trackingCtrl" class="px-4 py-2 border-0 outline-none w-full bg-transparent"
+          placeholder="Enter/Scan Tracking Num..." type="search" (keyup.enter)="trackingEntered($event)">
+      </div>
+      <div class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+        <mat-icon class="icon-sm text-secondary" svgIcon="mat:find_replace"></mat-icon>
+        <input #product [formControl]="productCtrl" class="px-4 py-2 border-0 outline-none w-full bg-transparent"
+          placeholder="Enter/Scan Part Number" type="search" (keyup.enter)="searchProductInList($event)">
+      </div>
+    </div>
+    <br>
+    <mat-divider class="-mx-6 text-border"></mat-divider>
+    <table>
+      <th>Part Number</th>
+      <th>Order Qty</th>
+      <th>Shipped Qty</th>
+      <th>Carrier</th>
+      <th>Tracking Number</th>
+      <tr *ngFor="let orderDetail of defaults.orderDetails">
+        <td style="text-align: center;">{{ orderDetail.partNumber }}</td>
+        <td style="text-align: center;"><span>{{ orderDetail.orderQuantity }}</span></td>
+        <td style="text-align: center;"><input type="number" min="0" [max]="orderDetail.orderQuantity" [value]="getValue(orderDetail)" (change)="shippedChange(orderDetail, $event)"></td>
+        <td style="text-align: center;">{{ orderDetail.carrier }}</td>
+        <td style="text-align: center;">{{ orderDetail.trackingNumber }}</td>
+      </tr>
+    </table>
+    <mat-divider class="-mx-6 text-border"></mat-divider>
+  </mat-dialog-content>
+  <br>
+  <mat-dialog-actions *ngIf="access === userPermission.FullAccess"  align="end">
+    <button mat-button mat-dialog-close type="button">Cancel</button>
+    <button color="primary" mat-flat-button (click)="save()">Update Order Status</button>
+  </mat-dialog-actions>
+</div>

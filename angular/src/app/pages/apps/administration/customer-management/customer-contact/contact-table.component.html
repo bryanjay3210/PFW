@@ -1,0 +1,118 @@
+<vex-page-layout>
+    <vex-page-layout-content>
+        <div>
+            <div class="bg-app-bar px-6 h-16 border-b sticky left-0 flex items-center">
+                <h2
+                    class="title my-0 ltr:pr-4 rtl:pl-4 ltr:mr-4 rtl:ml-4 ltr:border-r rtl:border-l hidden sm:block flex-none">
+                    <span *ngIf="selectionContact.isEmpty()">Contacts</span>
+                    <span *ngIf="selectionContact.hasValue()">{{ selectionContact.selected.length }}
+                        Contact<span *ngIf="selectionContact.selected.length > 1">s</span> selected</span>
+                </h2>
+                <div *ngIf="selectionContact.hasValue()" class="mr-4 pr-4 border-r flex-none">
+                    <button (click)="deleteContacts()" color="primary" mat-icon-button
+                        matTooltip="Delete selected" type="button">
+                        <mat-icon svgIcon="mat:delete"></mat-icon>
+                    </button>
+                    <button color="primary" mat-icon-button matTooltip="Archive" type="button">
+                        <mat-icon svgIcon="mat:folder"></mat-icon>
+                    </button>
+                </div>
+                <div
+                    class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+                    <mat-icon class="icon-sm text-secondary" svgIcon="mat:search"></mat-icon>
+                    <input [formControl]="searchCtrlContact"
+                        class="px-4 py-2 border-0 outline-none w-full bg-transparent" placeholder="Search..."
+                        type="search">
+                </div>
+                <span class="flex-1"></span>
+                <button [matMenuTriggerFor]="columnFilterMenuContact" class="ml-4 flex-none" mat-icon-button
+                    matTooltip="Filter Columns" type="button">
+                    <mat-icon svgIcon="mat:filter_list"></mat-icon>
+                </button>
+                <button *ngIf="access === userPermission.FullAccess" (click)="createContact()" class="ml-4 flex-none" color="primary" mat-mini-fab
+                    matTooltip="Add Contact" type="button">
+                    <mat-icon svgIcon="mat:add"></mat-icon>
+                </button>
+            </div>
+            <table @stagger [dataSource]="dataSourceContact" class="w-full" mat-table matSort>
+                <ng-container matColumnDef="checkbox">
+                    <th *matHeaderCellDef mat-header-cell>
+                        <mat-checkbox (change)="$event ? masterToggleContact() : null"
+                            [checked]="selectionContact.hasValue() && isAllContactSelected()"
+                            [indeterminate]="selectionContact.hasValue() && !isAllContactSelected()" color="primary">
+                        </mat-checkbox>
+                    </th>
+                    <td *matCellDef="let row" class="w-4" mat-cell>
+                        <mat-checkbox (change)="$event ? selectionContact.toggle(row) : null"
+                            (click)="$event.stopPropagation()" [checked]="selectionContact.isSelected(row)"
+                            color="primary">
+                        </mat-checkbox>
+                    </td>
+                </ng-container>
+
+                <!-- Boolean Columns -->
+                <ng-container *ngFor="let column of contactColumns;">
+                    <ng-container *ngIf="column.type === 'image'" [matColumnDef]="column.property">
+                    <th *matHeaderCellDef class="uppercase" mat-header-cell mat-sort-header> {{ column.label }}</th>
+                    <td *matCellDef="let row" [ngClass]="column.cssClasses" mat-cell align="center">
+                        <ng-container>
+                        <mat-icon *ngIf="row[column.property] === true" svgIcon="mat:check"></mat-icon>
+                        </ng-container>
+                    </td>
+                    </ng-container>
+                </ng-container>
+                
+                <!-- <ng-container *ngFor="let column of contactColumns; trackBy: trackByProperty"> -->
+                <ng-container *ngFor="let column of contactColumns;">
+                    <ng-container *ngIf="column.type === 'text'" [matColumnDef]="column.property">
+                        <th *matHeaderCellDef class="uppercase" mat-header-cell mat-sort-header> {{
+                            column.label }}</th>
+                        <td *matCellDef="let row" [ngClass]="column.cssClasses" mat-cell>
+                            <ng-container
+                                *ngIf="column.property !== 'locationId' && column.property !== 'positionTypeId'">
+                                {{ row[column.property] }}</ng-container>
+                            <ng-container *ngIf="column.property === 'locationId'">{{
+                                getLocationName(row[column.property]) }}</ng-container>
+                            <ng-container *ngIf="column.property === 'positionTypeId'">{{
+                                getPositionTypeName(row[column.property]) }}</ng-container>
+                        </td>
+                    </ng-container>
+                </ng-container>
+                <ng-container matColumnDef="actions">
+                    <th *matHeaderCellDef mat-header-cell mat-sort-header></th>
+                    <td *matCellDef="let row" class="w-10 text-secondary" mat-cell>
+                        <button (click)="$event.stopPropagation()" [matMenuTriggerData]="{ customer: row }"
+                            [matMenuTriggerFor]="actionsMenu" mat-icon-button type="button">
+                            <mat-icon svgIcon="mat:more_horiz"></mat-icon>
+                        </button>
+                    </td>
+                </ng-container>
+                <tr *matHeaderRowDef="visibleColumnsContact" mat-header-row></tr>
+                <tr (click)="updateContact(row)" *matRowDef="let row; columns: visibleColumnsContact;" @fadeInUp
+                    class="hover:bg-hover trans-ease-out cursor-pointer" mat-row></tr>
+            </table>
+            <mat-paginator [pageSizeOptions]="pageSizeOptions" [pageSize]="pageSize" class="sticky left-0">
+            </mat-paginator>
+        </div>
+    </vex-page-layout-content>
+</vex-page-layout>
+<mat-menu #columnFilterMenuContact="matMenu" xPosition="before" yPosition="below">
+    <button (click)="toggleColumnVisibility(column, $event)" *ngFor="let column of contactColumns"
+        class="checkbox-item mat-menu-item">
+        <mat-checkbox (click)="$event.stopPropagation()" [(ngModel)]="column.visible" color="primary">
+            {{ column.label }}
+        </mat-checkbox>
+    </button>
+</mat-menu>
+<mat-menu #actionsMenu="matMenu" xPosition="before" yPosition="below">
+    <ng-template let-customer="customer" matMenuContent>
+        <button (click)="updateContact(customer)" mat-menu-item>
+            <mat-icon svgIcon="mat:edit"></mat-icon>
+            <span>Modify</span>
+        </button>
+        <button (click)="deleteContact()" mat-menu-item>
+            <mat-icon svgIcon="mat:delete"></mat-icon>
+            <span>Delete</span>
+        </button>
+    </ng-template>
+</mat-menu>

@@ -1,0 +1,66 @@
+#footer {
+  position:fixed;
+  left: 560px;
+  //right:0px;
+  bottom: 250px;
+  width: 55%;
+  height: 50px;
+  background-color: white;
+}
+#footernext,
+#footerback {
+  text-align: center;        
+  width: auto;
+  float: right;
+  // border: 1px solid black;      
+}
+
+// .inactiveRow {
+//   background-color: antiquewhite;
+// }
+
+.align-middle {
+  width: 500px;
+  height: 500px;
+  object-fit: cover;
+}
+
+.overflow-ellipsis-wide {
+  max-width: 120px !important;
+  min-width: 120px !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tooltip-img {
+  position: relative;
+  vertical-align: middle;
+}
+
+.tooltip-img .tooltiptext-img {
+  visibility: hidden;
+  width: 500px;
+  height: 500px;
+  min-width: 500px;
+  min-height: 500px;
+  max-width: 500px;
+  max-height: 500px;
+  background-color: gray;
+  color: #fff;
+  text-align: center;
+  border-radius: 5px;
+  padding: 3px 0;
+  padding-left: 50px;
+  table-layout: fixed;
+
+  /* Position the tooltip */
+  position: absolute;
+  z-index: 1;
+  top: -60px !important;
+  left: 110%;
+}
+
+.tooltip-img:hover .tooltiptext-img {
+  visibility: visible;
+}

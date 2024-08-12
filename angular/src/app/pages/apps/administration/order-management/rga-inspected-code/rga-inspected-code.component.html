@@ -1,0 +1,57 @@
+<div>
+  <div class="flex items-center" mat-dialog-title>
+    <img [src]="imageDefault" class="avatar-sq mr-5">
+    <h2 class="headline m-0 flex-auto">RGA Inspected Code</h2>
+    <button class="text-secondary" mat-dialog-close mat-icon-button type="button">
+      <mat-icon svgIcon="mat:close"></mat-icon>
+    </button>
+  </div>
+  <mat-divider class="-mx-6 text-border"></mat-divider>
+  <br>
+  <mat-dialog-content class="flex flex-col">
+    <div class="flex flex-col sm:flex-row">
+      <div class="bg-foreground rounded-full border px-4 max-w-[500px] flex-auto flex items-center border border-gray-300">
+        <mat-icon class="icon-sm text-secondary" svgIcon="mat:location_on"></mat-icon>
+        <mat-select [formControl]="inspectedCodeCtrl" aria-required="true" class="px-4 py-2 border-0 outline-none w-full bg-transparent"
+          placeholder="Select RGA Inspected Code" (selectionChange)="inspectedCodeChanged()">
+          <mat-option *ngFor="let e of rgaInspectedCodeList" [value]="e.id">{{ e.code }} </mat-option>
+        </mat-select>
+      </div>
+    </div>
+    <br>
+    <mat-divider class="-mx-6 text-border"></mat-divider>
+    <br>
+    <div *ngIf="inspectedCodeCtrl.value === 1 || inspectedCodeCtrl.value === 4" class="flex flex-col sm:flex-row">
+      <div class="bg-foreground rounded-full border px-4 max-w-[200px] flex-auto flex items-center border border-gray-300">
+        <mat-icon class="icon-sm text-secondary" svgIcon="mat:location_on"></mat-icon>
+        <mat-select #state [formControl]="stateCtrl" aria-required="true" class="px-4 py-2 border-0 outline-none w-full bg-transparent"
+          placeholder="Select State" required (selectionChange)="stateChange()">
+          <mat-option *ngFor="let e of stateList" [value]="e.id">{{ e.code }} </mat-option>
+        </mat-select>
+      </div>
+      <div class="bg-foreground rounded-full border px-4 max-w-[200px] flex-auto flex items-center border border-gray-300">
+        <mat-icon class="icon-sm text-secondary" svgIcon="mat:location_on"></mat-icon>
+        <input #location [formControl]="locationCtrl" class="px-4 py-2 border-0 outline-none w-full bg-transparent"
+          placeholder="Enter Location" type="search" (keyup.enter)="searchLocation($event)" required>
+      </div>
+      <div *ngIf="inspectedCodeCtrl.value === 4" class="bg-foreground rounded-full border px-4 max-w-[200px] flex-auto flex items-center border border-gray-300">
+        <mat-icon class="icon-sm text-secondary" svgIcon="mat:location_on"></mat-icon>
+        <input #product [formControl]="productCtrl" class="px-4 py-2 border-0 outline-none w-full bg-transparent"
+          placeholder="Enter Part Number" type="search" (keyup.enter)="searchProduct($event)" required>
+      </div>
+      <!--<div class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+        <mat-icon class="icon-sm text-secondary" svgIcon="mat:find_replace"></mat-icon>
+        <input #product [formControl]="productCtrl" class="px-4 py-2 border-0 outline-none w-full bg-transparent"
+          placeholder="Enter/Scan Part Number" type="search" (keyup.enter)="searchProductInList($event)">
+      </div> -->
+    </div>
+    <br>
+    <mat-divider class="-mx-6 text-border"></mat-divider>
+  </mat-dialog-content>
+  <br>
+  <mat-dialog-actions *ngIf="access === userPermission.FullAccess"  align="end">
+    <button mat-button mat-dialog-close type="button">Cancel</button>
+    <button [disabled]="(defaults.rgaInspectedCode || defaults.rgaInspectedCode !== null || defaults.isCreditMemoCreated) && defaults.rgaInspectedCode != 5" color="primary" mat-flat-button (click)="save()">Update {{ defaults.partNumber}}</button>
+  </mat-dialog-actions>
+</div>
+

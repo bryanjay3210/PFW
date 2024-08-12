@@ -1,0 +1,60 @@
+<form (ngSubmit)="save()" [formGroup]="form">
+   <div class="flex items-center" mat-dialog-title>
+      <img [src]="imageDefault" class="avatar-sq mr-5">
+      <h2 class="headline m-0 flex-auto">{{ form.get('partNumber').value }}</h2>
+      <button [matMenuTriggerFor]="settingsMenu" class="text-secondary" mat-icon-button type="button">
+         <mat-icon svgIcon="mat:more_vert"></mat-icon>
+      </button>
+      <button class="text-secondary" mat-dialog-close mat-icon-button type="button">
+         <mat-icon svgIcon="mat:close"></mat-icon>
+      </button>
+   </div>
+   <mat-divider class="-mx-6 text-border"></mat-divider>
+   <mat-dialog-content class="flex flex-col">
+      <div class="flex flex-col sm:flex-row">
+         <mat-form-field class="mt-6 flex-auto">
+            <mat-label>Part Number</mat-label>
+            <input formControlName="partNumber" matInput required readonly>
+         </mat-form-field>
+         <mat-form-field class="sm:mt-6 sm:ml-6 flex-auto">
+            <mat-label>Parts Link Number</mat-label>
+            <input formControlName="partsLinkNumber" matInput required>
+         </mat-form-field>
+      </div>
+      <div class="flex flex-col sm:flex-row">
+         <mat-form-field class="flex-auto">
+            <mat-label>OEM Number</mat-label>
+            <input formControlName="oemNumber" matInput required>
+         </mat-form-field>
+      </div>
+      <div class="flex flex-col sm:flex-row">
+         <div class="mt-6 flex-auto">
+            <mat-checkbox #checkboxPartsLink color="warn" [checked]="isMainPartsLink"
+               (change)="onMainPartsLinkClick(checkboxPartsLink.checked)">Main Parts Link</mat-checkbox>
+         </div>
+         <div class="sm:mt-6 sm:ml-6 flex-auto">
+            <mat-checkbox #checkboxOEM color="warn" [checked]="isMainOEM" 
+               (change)="onMainOEMClick(checkboxOEM.checked)">Main OEM</mat-checkbox>
+         </div>
+      </div>
+   </mat-dialog-content>
+   <mat-dialog-actions *ngIf="access === userPermission.FullAccess" align="end">
+      <button mat-button mat-dialog-close type="button">Cancel</button>
+      <button *ngIf="isCreateMode()" color="primary" mat-flat-button (click)="save()">Create Parts Link</button>
+      <button *ngIf="isUpdateMode()" color="primary" mat-flat-button (click)="save()">Update Parts Link</button>
+   </mat-dialog-actions>
+</form>
+<mat-menu #settingsMenu="matMenu" xPosition="before" yPosition="below">
+   <button mat-menu-item>
+      <mat-icon svgIcon="mat:print"></mat-icon>
+      <span>Print</span>
+   </button>
+   <button mat-menu-item>
+      <mat-icon svgIcon="mat:download"></mat-icon>
+      <span>Export</span>
+   </button>
+   <button mat-menu-item>
+      <mat-icon svgIcon="mat:delete"></mat-icon>
+      <span>Delete</span>
+   </button>
+</mat-menu>

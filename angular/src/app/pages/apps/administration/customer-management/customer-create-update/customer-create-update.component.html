@@ -1,0 +1,289 @@
+<vex-page-layout>
+   <div class="flex items-center" mat-dialog-title>
+      <div class="display-1 font-bold mt-0 mb-4 flex-auto items-center">
+         <h1 class="display-1 font-bold mt-0 mb-4 flex items-center">
+            <!-- <span @scaleIn
+               class="w-12 h-12 rounded-full text-primary ltr:mr-4 rtl:ml-4 flex items-center justify-center bg-primary/10">
+               <mat-icon svgIcon="mat:contact"></mat-icon>
+            </span> -->
+            <span><img [src]="imageDefault" class="avatar-sq mr-5"></span>
+            <span *ngIf="this.mode === 'create'" @fadeInRight class="block">New Customer</span>
+            <span *ngIf="this.mode === 'update'" @fadeInRight class="block">{{ defaults.customerName }}</span>
+         </h1>
+      </div>
+      <button [matMenuTriggerFor]="settingsMenu" class="text-secondary" mat-icon-button type="button">
+         <mat-icon svgIcon="mat:more_vert"></mat-icon>
+      </button>
+      <button class="text-secondary" mat-dialog-close mat-icon-button type="button">
+         <mat-icon svgIcon="mat:close"></mat-icon>
+      </button>
+   </div>
+   <vex-page-layout-content class="vex-tabs p-0 container" style="margin-top: -75px;">
+      <mat-tab-group>
+         <mat-tab label="Customer Details">
+            <div class="flex flex-col sm:flex-row gap-4">
+               <form (ngSubmit)="save()" [formGroup]="form">
+                  <div @fadeInUp class="card flex-auto">
+                     <div class="display-1 font-bold mt-0 mb-4 flex-auto items-center">
+                        <div class="px-6 py-4 border-b flex items-center">
+                           <h2 class="title m-0 flex-auto">Account Information</h2>
+                           <h2 class="title m-0">Account #: {{ defaults.accountNumber }}</h2>
+                        </div>
+                     </div>
+                     <div class="px-6 py-4 flex flex-col">
+                        <div class="flex flex-col sm:flex-row">
+                           <mat-form-field class="flex-auto">
+                              <mat-label>Business Name</mat-label>
+                              <input cdkFocusInitial formControlName="customerName" matInput>
+                           </mat-form-field>
+                           <mat-form-field class="sm:ml-6 flex-auto">
+                              <mat-label>Customer Type</mat-label>
+                              <mat-select formControlName="customerTypeId"
+                                 (selectionChange)="onCustomerTypeChange($event)" aria-required="true">
+                                 <mat-option *ngFor="let ct of customerTypeList" [value]="ct.id">{{ ct.name }}
+                                 </mat-option>
+                              </mat-select>
+                           </mat-form-field>
+                        </div>
+                        <div class="flex flex-col sm:flex-row">
+                           <mat-form-field class="flex-auto">
+                              <mat-label>Contact Name</mat-label>
+                              <input formControlName="contactName" matInput required>
+                           </mat-form-field>
+                           <mat-form-field class="sm:ml-6 flex-auto">
+                              <mat-label>Email</mat-label>
+                              <input formControlName="email" matInput required>
+                           </mat-form-field>
+                        </div>
+                        <div class="flex flex-col sm:flex-row">
+                           <mat-form-field class="flex-auto">
+                              <mat-label>Phone Number</mat-label>
+                              <input formControlName="phoneNumber" matInput required>
+                           </mat-form-field>
+                           <mat-form-field class="sm:ml-6 flex-auto">
+                              <mat-label>Fax Number</mat-label>
+                              <input formControlName="faxNumber" matInput required>
+                           </mat-form-field>
+                        </div>
+                        <mat-form-field class="flex-auto">
+                           <mat-label>Address Line 1</mat-label>
+                           <input formControlName="addressLine1" matInput required>
+                        </mat-form-field>
+                        <mat-form-field class="flex-auto">
+                           <mat-label>Address Line 2</mat-label>
+                           <input formControlName="addressLine2" matInput>
+                        </mat-form-field>
+                        <div class="flex flex-col sm:flex-row">
+                           <mat-form-field class="flex-auto">
+                              <mat-label>City</mat-label>
+                              <input formControlName="city" matInput required>
+                           </mat-form-field>
+                           <mat-form-field class="sm:ml-6 flex-auto">
+                              <mat-label>State</mat-label>
+                              <input [formControl]="stateCtrl" [matAutocomplete]="auto" matInput required>
+                              <mat-autocomplete #auto="matAutocomplete">
+                                 <mat-option *ngFor="let state of filteredStates$ | async" [value]="state.code"
+                                    (onSelectionChange)="onStateSelectionChange(state.code)">
+                                    <span class="body-1">({{ state.code }}) </span>
+                                    <span class="body-1">{{ state.name }}</span>
+                                 </mat-option>
+                              </mat-autocomplete>
+                              <button (click)="stateCtrl.reset()" *ngIf="stateCtrl.value" mat-icon-button matSuffix
+                                 type="button">
+                                 <mat-icon svgIcon="mat:close"></mat-icon>
+                              </button>
+                              <button *ngIf="!stateCtrl.value" mat-icon-button matSuffix type="button">
+                                 <mat-icon svgIcon="mat:arrow_drop_down"></mat-icon>
+                              </button>
+                           </mat-form-field>
+                        </div>
+                        <div class="flex flex-col sm:flex-row">
+                           <mat-form-field class="flex-auto">
+                              <mat-label>Country</mat-label>
+                              <input [formControl]="countryCtrl" [matAutocomplete]="autoCountry" matInput required>
+                              <mat-autocomplete #autoCountry="matAutocomplete">
+                                 <mat-option *ngFor="let country of filteredCountries$ | async" [value]="country.name"
+                                    (onSelectionChange)="onCountrySelectionChange(country.name)">
+                                    <span class="body-1">({{ country.code }}) </span>
+                                    <span class="body-1">{{ country.name }}</span>
+                                 </mat-option>
+                              </mat-autocomplete>
+                              <button (click)="resetCountryControl()" *ngIf="countryCtrl.value" mat-icon-button
+                                 matSuffix type="button">
+                                 <mat-icon svgIcon="mat:close"></mat-icon>
+                              </button>
+                              <button *ngIf="!countryCtrl.value" mat-icon-button matSuffix type="button">
+                                 <mat-icon svgIcon="mat:arrow_drop_down"></mat-icon>
+                              </button>
+                           </mat-form-field>
+                           <mat-form-field class="sm:ml-6 flex-auto">
+                              <mat-label>Zip Code</mat-label>
+                              <input formControlName="zipCode" matInput required>
+                           </mat-form-field>
+                        </div>
+                     </div>
+                  </div>
+               </form>
+               <!----------------------------------------------------->
+               <form (ngSubmit)="save()" [formGroup]="form">
+                  <div @fadeInUp class="card flex-auto">
+                     <div class="display-1 font-bold mt-0 mb-4 flex-auto items-center">
+                        <div class="px-6 py-4 border-b flex items-center">
+                           <h2 class="title m-0 flex-auto">Override Credit Limit</h2>
+                           <mat-slide-toggle color="primary" (change)="setBypassCreditLimit($event)" [checked]="bypassCreditLimit"></mat-slide-toggle>
+                        </div>
+                     </div>
+                     <div class="px-6 py-4 flex flex-col">
+                        <div class="flex flex-col sm:flex-row">
+                           <mat-form-field class="flex-auto">
+                              <mat-label>Price Level</mat-label>
+                              <mat-select formControlName="priceLevelId" aria-required="true">
+                                 <mat-option *ngFor="let pl of priceLevelList" [value]="pl.id">{{ pl.levelName }}
+                                 </mat-option>
+                              </mat-select>
+                           </mat-form-field>
+                           <mat-form-field class="sm:ml-6 flex-auto">
+                              <mat-label>Payment Term</mat-label>
+                              <mat-select formControlName="paymentTermId" aria-required="true">
+                                 <mat-option *ngFor="let pt of paymentTermList" [value]="pt.id">{{ pt.termName }}
+                                 </mat-option>
+                              </mat-select>
+                           </mat-form-field>
+                        </div>
+                        <div class="flex flex-col sm:flex-row">
+                           <mat-form-field class="flex-auto">
+                              <mat-label>Credit Limit</mat-label>
+                              <input formControlName="creditLimit" type="number" min="0" matInput required>
+                           </mat-form-field>
+                           <mat-form-field class="sm:ml-6 flex-auto">
+                              <mat-label>Current Balance</mat-label>
+                              <input formControlName="overBalance" type="number" matInput>
+                           </mat-form-field>
+                        </div>
+                        <div class="flex flex-col sm:flex-row">
+                           <mat-form-field class="flex-auto">
+                              <mat-label>Discount</mat-label>
+                              <input formControlName="discount" type="number" min="0" matInput>
+                           </mat-form-field>
+                           <mat-form-field class="sm:ml-6 flex-auto">
+                              <mat-label>Tax Rate</mat-label>
+                              <input formControlName="taxRate" type="number" min="0" matInput>
+                           </mat-form-field>
+                        </div>
+                        <mat-form-field class="flex-auto">
+                           <mat-label>Cross Street</mat-label>
+                           <input formControlName="crossStreet" matInput>
+                        </mat-form-field>
+                        <div class="flex flex-col sm:flex-row">
+                           <mat-form-field class="flex-auto">
+                              <mat-label>Sellers Permit</mat-label>
+                              <input formControlName="sellersPermit" matInput>
+                           </mat-form-field>
+                           <div class="sm:ml-6 flex-auto">
+                              <mat-checkbox #checkbox color="warn" [checked]=isHoldAccount
+                                 (change)="onHoldAccountClick(checkbox.checked)">Account On Hold</mat-checkbox>
+                           </div>
+                        </div>
+                        <div class="flex flex-col sm:flex-row">
+                           <mat-form-field class="flex-auto">
+                              <mat-label>Sales Rep Out</mat-label>
+                              <mat-select formControlName="salesRepresentativeOutId" aria-required="true">
+                                 <mat-option *ngFor="let sr of salesRepresentativeOutList" [value]="sr.id">{{
+                                    sr.contactName }}</mat-option>
+                              </mat-select>
+                           </mat-form-field>
+                           <mat-form-field class="sm:ml-6 flex-auto">
+                              <mat-label>Sales Rep In</mat-label>
+                              <mat-select formControlName="salesRepresentativeInId" aria-required="true">
+                                 <mat-option *ngFor="let sr of salesRepresentativeInList" [value]="sr.id">{{
+                                    sr.contactName }}</mat-option>
+                              </mat-select>
+                           </mat-form-field>
+                        </div>
+                     </div>
+                  </div>
+                  
+               </form>
+               <!----------------------------------------------------->
+            </div>
+            <form>
+               <div class="bg-app-bar px-6 h-16 border-b sticky left-0 flex items-center">
+                  <!-- <h2
+                     class="title my-0 ltr:pr-4 rtl:pl-4 ltr:mr-4 rtl:ml-4 ltr:border-r rtl:border-l hidden sm:block flex-none">
+                     <span>Customer Notes</span>
+                  </h2>
+                  <span class="flex-1"></span> -->
+                  <mat-form-field class="flex-auto">
+                     <mat-label>Note</mat-label>
+                     <input [formControl]="customerNoteCtrl" matInput>
+                  </mat-form-field>
+                  <button *ngIf="access === userPermission.FullAccess" (click)="createNote()" class="ml-4 flex-none"
+                     color="primary" mat-mini-fab matTooltip="Add Note" type="button">
+                     <mat-icon svgIcon="mat:add"></mat-icon>
+                  </button>
+               </div>
+            </form>
+            <div id="table">
+               <div id="table-container">
+                  <table @stagger [dataSource]="dataSource" class="w-full" mat-table matSort (matSortChange)="sortDataMatTable($event)" style="height: 100px; overflow: auto;">
+                     <!-- Text Columns -->
+                     <ng-container *ngFor="let column of columns; trackBy: trackByProperty">
+                        <ng-container *ngIf="column.type === 'text'" [matColumnDef]="column.property">
+                           <th *matHeaderCellDef class="uppercase" mat-header-cell mat-sort-header> {{ column.label }}</th>
+                           <div *ngIf="column.property === 'createdDate'; else isNotDate">
+                              <td *matCellDef="let row" mat-cell>
+                                 <ng-container> {{ formatDate(row[column.property]) }} </ng-container>
+                              </td>
+                           </div>
+                           <ng-template #isNotDate>
+                              <td *matCellDef="let row" mat-cell>
+                                 <ng-container><span style="float: left;">{{ row[column.property] }}</span></ng-container>
+                              </td>
+                           </ng-template>
+                        </ng-container>
+                     </ng-container>
+      
+                     <tr *matHeaderRowDef="visibleColumns" mat-header-row></tr>
+                     <tr *matRowDef="let row; columns: visibleColumns;" @fadeInUp
+                        class="hover:bg-hover trans-ease-out cursor-pointer"
+                        [ngClass]="row.isActive === false ? 'inactiveRow' : ''" mat-row></tr>
+                  </table>
+               </div>
+            </div>
+            
+            
+            <mat-dialog-actions *ngIf="access === userPermission.FullAccess" align="end">
+               <button mat-button mat-dialog-close type="button">Cancel</button>
+               <button *ngIf="isCreateMode()" color="primary" mat-flat-button (click)="save()">Create
+                  Customer</button>
+               <button *ngIf="isUpdateMode()" color="primary" mat-flat-button (click)="save()">Update
+                  Customer</button>
+            </mat-dialog-actions>
+            <div class="p-6">
+               <div>
+                  <mat-menu #settingsMenu="matMenu" xPosition="before" yPosition="below">
+                     <button mat-menu-item>
+                        <mat-icon svgIcon="mat:print"></mat-icon>
+                        <span>Print</span>
+                     </button>
+                     <button mat-menu-item>
+                        <mat-icon svgIcon="mat:download"></mat-icon>
+                        <span>Export</span>
+                     </button>
+                     <button mat-menu-item>
+                        <mat-icon svgIcon="mat:delete"></mat-icon>
+                        <span>Delete</span>
+                     </button>
+                  </mat-menu>
+               </div>
+            </div>
+         </mat-tab>
+         <mat-tab *ngIf="isUpdateMode()" label="Locations">
+            <vex-location-table [customerId]="defaults.id"></vex-location-table>
+         </mat-tab>
+         <mat-tab *ngIf="isUpdateMode()" label="Contacts">
+            <vex-contact-table [customerId]="defaults.id"></vex-contact-table>
+         </mat-tab>
+      </mat-tab-group>
+   </vex-page-layout-content>
+</vex-page-layout>

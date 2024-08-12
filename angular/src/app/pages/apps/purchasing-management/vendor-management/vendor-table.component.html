@@ -1,0 +1,179 @@
+<vex-page-layout>
+  <vex-page-layout-header class="pb-16 flex flex-col items-start justify-center">
+    <div [class.container]="layoutCtrl.value === 'boxed'" [class.px-gutter]="layoutCtrl.value === 'fullwidth'"
+      class="w-full flex flex-col sm:flex-row justify-between">
+      <div>
+        <h1 class="title mt-0 mb-1">Vendors</h1>
+        <vex-breadcrumbs [crumbs]="['Menu Tab Module', 'Purchasing Management',  'Vendors']"></vex-breadcrumbs>
+      </div>
+    </div>
+  </vex-page-layout-header>
+
+  <vex-page-layout-content [class.container]="layoutCtrl.value === 'boxed'" [class.px-gutter]="layoutCtrl.value === 'fullwidth'" class="-mt-6">
+    <div class="card overflow-auto -mt-16">
+      <div class="bg-app-bar px-6 h-16 border-b sticky left-0 flex items-center">
+        <h2 class="title my-0 ltr:pr-4 rtl:pl-4 ltr:mr-4 rtl:ml-4 ltr:border-r rtl:border-l hidden sm:block flex-none">
+          <span *ngIf="selection.isEmpty()">Vendors</span>
+          <span *ngIf="selection.hasValue()">{{ selection.selected.length }}
+            Vendors<span *ngIf="selection.selected.length > 1">s</span> selected</span>
+        </h2>
+
+        <div *ngIf="selection.hasValue()" class="mr-4 pr-4 border-r flex-none">
+          <button (click)="deleteVendors(selection.selected)" color="primary" mat-icon-button
+            matTooltip="Delete selected" type="button">
+            <mat-icon svgIcon="mat:delete"></mat-icon>
+          </button>
+
+          <button color="primary" mat-icon-button matTooltip="Archive" type="button">
+            <mat-icon svgIcon="mat:folder"></mat-icon>
+          </button>
+        </div>
+
+        <div
+          class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+          <mat-icon class="icon-sm text-secondary" svgIcon="mat:search"></mat-icon>
+          <input [formControl]="searchCtrl" class="px-4 py-2 border-0 outline-none w-full bg-transparent"
+            placeholder="Search..." type="search">
+        </div>
+        <span *ngIf="!!searchCtrl.value && searchCtrl.value.trim().length > 0">
+          <button (click)="searchVendors()" class="ml-4 flex-none" color="primary" mat-mini-fab
+            matTooltip="Search Vendors" type="button">
+            <mat-icon svgIcon="mat:search"></mat-icon>
+          </button>
+        </span>
+
+        <span class="flex-1"></span>
+
+        <!-- <mat-slide-toggle color="primary" labelPosition="before" (change)="showInactiveVendors()"
+          [(ngModel)]="isShowInactive">Show Inactive</mat-slide-toggle> -->
+
+        <button [matMenuTriggerFor]="columnFilterMenu" class="ml-4 flex-none" mat-icon-button
+          matTooltip="Filter Columns" type="button">
+          <mat-icon svgIcon="mat:filter_list"></mat-icon>
+        </button>
+
+        <button *ngIf="access === userPermission.FullAccess" (click)="createVendor()" class="ml-4 flex-none"
+          color="primary" mat-mini-fab matTooltip="Add Vendor" type="button">
+          <mat-icon svgIcon="mat:add"></mat-icon>
+        </button>
+      </div>
+
+      <table @stagger [dataSource]="dataSource" class="w-full" mat-table matSort (matSortChange)="sortDataMatTable($event)">
+        <!-- Checkbox Column -->
+        <ng-container matColumnDef="checkbox">
+          <th *matHeaderCellDef mat-header-cell>
+            <mat-checkbox (change)="$event ? masterToggle() : null" [checked]="selection.hasValue() && isAllSelected()"
+              [indeterminate]="selection.hasValue() && !isAllSelected()" color="primary">
+            </mat-checkbox>
+          </th>
+          <td *matCellDef="let row" class="w-4" mat-cell>
+            <mat-checkbox (change)="$event ? selection.toggle(row) : null" (click)="$event.stopPropagation()"
+              [checked]="selection.isSelected(row)" color="primary">
+            </mat-checkbox>
+          </td>
+        </ng-container>
+
+        <!-- Image Column -->
+        <ng-container matColumnDef="imageUrl">
+          <th *matHeaderCellDef mat-header-cell></th>
+          <td *matCellDef="let row" class="tooltip-img w-16 min-w-16 pr-0" mat-cell>
+            <img [src]="row['imageUrl']" class="avatar h-16 w-16">
+            <table class="tooltiptext-img" style="min-width: 1000px important;">
+              <th class="overflow-ellipsis-wide h-8" title="{{ row.partNumber }} - {{ row.partDescription }}">
+                <span>{{ row.partNumber }} - {{ row.partDescription }}</span>
+              </th>
+              <tr>
+                <td><img [src]="row['imageUrl']" class="align-middle"></td>
+              </tr>
+            </table>
+          </td>
+        </ng-container>
+
+         <!-- Text Columns -->
+         <ng-container *ngFor="let column of columns; trackBy: trackByProperty">
+          <ng-container *ngIf="column.type === 'text'" [matColumnDef]="column.property">
+            <th *matHeaderCellDef class="uppercase" mat-header-cell mat-sort-header> {{ column.label }}</th>
+              <div *ngIf="column.property === 'paymentDate'; else isNotDate">
+                 <td *matCellDef="let row" mat-cell>
+                    <ng-container> {{ formatDate(row[column.property]) }} </ng-container>
+                 </td>
+              </div>
+              <ng-template #isNotDate>
+                <td *matCellDef="let row" mat-cell>
+                  <ng-container><span style="float: left;">{{ row[column.property] }}</span></ng-container>
+                </td>
+              </ng-template>
+          </ng-container>
+        </ng-container>
+
+        <!-- Number Columns -->
+        <ng-container *ngFor="let column of columns; trackBy: trackByProperty">
+          <ng-container *ngIf="column.type === 'number'" [matColumnDef]="column.property">
+            <th *matHeaderCellDef class="uppercase" mat-header-cell mat-sort-header> {{ column.label }}</th>
+            <td *matCellDef="let row" mat-cell align="center">
+              <ng-container>{{ formatCurrency(row[column.property]) }}</ng-container>
+            </td>
+          </ng-container>
+        </ng-container>
+
+        <!-- Boolean Columns -->
+        <ng-container *ngFor="let column of columns; trackBy: trackByProperty">
+          <ng-container *ngIf="column.type === 'image'" [matColumnDef]="column.property">
+            <th *matHeaderCellDef class="uppercase" mat-header-cell mat-sort-header> {{ column.label }}</th>
+            <td *matCellDef="let row" [ngClass]="column.cssClasses" mat-cell align="center">
+              <ng-container>
+                <mat-icon *ngIf="row[column.property] === true" svgIcon="mat:check"></mat-icon>
+              </ng-container>
+            </td>
+          </ng-container>
+        </ng-container>
+
+        <!-- Action Column -->
+        <ng-container matColumnDef="actions">
+          <th *matHeaderCellDef mat-header-cell mat-sort-header></th>
+          <td *matCellDef="let row" class="w-10 text-secondary" mat-cell>
+            <button *ngIf="access === userPermission.FullAccess" (click)="$event.stopPropagation()"
+              [matMenuTriggerData]="{ vendor: row }" [matMenuTriggerFor]="actionsMenu" mat-icon-button type="button">
+              <mat-icon svgIcon="mat:more_horiz"></mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr *matHeaderRowDef="visibleColumns" mat-header-row></tr>
+        <tr (click)="updateVendor(row)" *matRowDef="let row; columns: visibleColumns;" @fadeInUp
+          class="hover:bg-hover trans-ease-out cursor-pointer" 
+          [ngClass]="row.isActive === false ? 'inactiveRow' : ''" mat-row></tr>
+      </table>
+
+      <!-- <mat-paginator style="height: 1px;" [pageSizeOptions]="pageSizeOptions" [pageSize]="pageSize"
+        class="sticky left-0"></mat-paginator> -->
+      <mat-paginator [pageSize]="pageSize" [pageIndex]="pageIndex" [pageSizeOptions]="pageSizeOptions"
+        class="sticky left-0" [length]="dataCount" [showFirstLastButtons]="true"
+        (page)="onPaginatorClicked($event)"></mat-paginator>
+    </div>
+
+  </vex-page-layout-content>
+
+</vex-page-layout>
+
+<mat-menu #columnFilterMenu="matMenu" xPosition="before" yPosition="below">
+  <button (click)="toggleColumnVisibility(column, $event)" *ngFor="let column of columns"
+    class="checkbox-item mat-menu-item">
+    <mat-checkbox (click)="$event.stopPropagation()" [(ngModel)]="column.visible" color="primary">
+      {{ column.label }}
+    </mat-checkbox>
+  </button>
+</mat-menu>
+
+<mat-menu #actionsMenu="matMenu" xPosition="before" yPosition="below">
+  <ng-template let-vendor="vendor" matMenuContent>
+    <button (click)="updateVendor(vendor)" mat-menu-item>
+      <mat-icon svgIcon="mat:edit"></mat-icon>
+      <span>Modify</span>
+    </button>
+    <button (click)="deleteVendor(vendor)" mat-menu-item>
+      <mat-icon svgIcon="mat:delete"></mat-icon>
+      <span>Delete</span>
+    </button>
+  </ng-template>
+</mat-menu>

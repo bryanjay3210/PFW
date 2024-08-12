@@ -1,0 +1,115 @@
+<form (ngSubmit)="save()" [formGroup]="form">
+  <div class="flex items-center" mat-dialog-title>
+    <img [src]="imageDefault" class="avatar-sq mr-5">
+    <h2 *ngIf="form.get('userName').value" class="headline m-0 flex-auto">{{ form.get('userName').value }} User</h2>
+    <h2 *ngIf="!form.get('userName').value" class="headline m-0 flex-auto">New User</h2>
+    <button [matMenuTriggerFor]="settingsMenu" class="text-secondary" mat-icon-button type="button">
+      <mat-icon svgIcon="mat:more_vert"></mat-icon>
+    </button>
+    <button class="text-secondary" mat-dialog-close mat-icon-button type="button">
+      <mat-icon svgIcon="mat:close"></mat-icon>
+    </button>
+  </div>
+
+  <mat-divider class="-mx-6 text-border"></mat-divider>
+
+  <mat-dialog-content class="flex flex-col">
+    <div class="flex flex-col sm:flex-row">
+      <mat-form-field class="mt-6 flex-auto">
+        <mat-label>User Name</mat-label>
+        <input cdkFocusInitial formControlName="userName" matInput required>
+      </mat-form-field>
+      <mat-form-field class="sm:mt-6 sm:ml-6 flex-auto">
+        <mat-label>Email</mat-label>
+        <input formControlName="email" matInput required>
+      </mat-form-field>
+    </div>
+    <div class="flex flex-col sm:flex-row">
+      <mat-form-field class="mt-6 flex-auto">
+        <mat-label>User Type</mat-label>
+        <mat-select #userType formControlName="isCustomerUser" aria-required="true">
+          <mat-option *ngFor="let e of userTypeList" [value]="e.id">{{ e.name }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field class="sm:mt-6 sm:ml-6 flex-auto">
+        <mat-label>User Role</mat-label>
+        <mat-select formControlName="roleId" aria-required="true">
+          <mat-option *ngFor="let e of roleList" [value]="e.id">{{ e.name }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <!---------------------------------------------------------------------------------->
+    <div *ngIf="userType.value === 2" class="flex flex-col sm:flex-row">
+      <mat-form-field class="mt-6 flex-auto">
+        <mat-label>Customer/Business</mat-label>
+        <mat-select formControlName="customerId" aria-required="true" (selectionChange)="onCustomerChange($event)">
+          <mat-option *ngFor="let e of customerList" [value]="e.id">{{ e.customerName }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field class="sm:mt-6 sm:ml-6 flex-auto">
+        <mat-label>Location</mat-label>
+        <mat-select formControlName="locationId" aria-required="true">
+          <mat-option *ngFor="let e of filteredLocationList" [value]="e.id">{{ e.locationName }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+  </mat-dialog-content>
+
+  <div class="flex flex-col sm:flex-row">
+    <div class="sm:ml-6 flex-auto">
+      <mat-checkbox #checkboxA color="warn" [checked]=isActivated (change)="onActivateClick(checkboxA.checked)">
+        Activated</mat-checkbox>
+    </div>
+    <div class="sm:ml-6 flex-auto">
+      <mat-checkbox #checkbox color="warn" [checked]=isChangePasswordOnLogin
+        (change)="onIsChangePasswordOnLoginClick(checkbox.checked)">Change Password On Login</mat-checkbox>
+    </div>
+  </div>
+
+  <!---------------------------------------------------------------------------------->
+  <div *ngIf="isCreateMode()" class="flex flex-col sm:flex-row">
+    <mat-form-field class="mt-6 flex-auto">
+      <mat-label>Password</mat-label>
+      <input [type]="inputType" formControlName="password" matInput required>
+      <button (click)="toggleVisibility()" mat-icon-button matSuffix matTooltip="Toggle Visibility" type="button">
+        <mat-icon *ngIf="visible" svgIcon="mat:visibility"></mat-icon>
+        <mat-icon *ngIf="!visible" svgIcon="mat:visibility_off"></mat-icon>
+      </button>
+      <mat-hint>Click the eye to toggle visibility</mat-hint>
+    </mat-form-field>
+
+    <mat-form-field class="sm:mt-6 sm:ml-6 flex-auto">
+      <mat-label>Password (Confirm)</mat-label>
+      <input [type]="inputType" formControlName="passwordConfirm" matInput required>
+      <button (click)="toggleVisibility()" mat-icon-button matSuffix matTooltip="Toggle Visibility" type="button">
+        <mat-icon *ngIf="visible" svgIcon="mat:visibility"></mat-icon>
+        <mat-icon *ngIf="!visible" svgIcon="mat:visibility_off"></mat-icon>
+      </button>
+      <mat-hint>Please repeat your password from above</mat-hint>
+    </mat-form-field>
+  </div>
+
+  <mat-dialog-actions *ngIf="access === userPermission.FullAccess" align="end">
+    <button mat-button mat-dialog-close type="button">Cancel</button>
+    <button *ngIf="isCreateMode()" color="primary" mat-flat-button (click)="save()">Create User</button>
+    <button *ngIf="isUpdateMode()" color="primary" mat-flat-button (click)="save()">Update User</button>
+  </mat-dialog-actions>
+</form>
+
+<mat-menu #settingsMenu="matMenu" xPosition="before" yPosition="below">
+  <button mat-menu-item>
+    <mat-icon svgIcon="mat:print"></mat-icon>
+    <span>Print</span>
+  </button>
+
+  <button mat-menu-item>
+    <mat-icon svgIcon="mat:download"></mat-icon>
+    <span>Export</span>
+  </button>
+
+  <button mat-menu-item>
+    <mat-icon svgIcon="mat:delete"></mat-icon>
+    <span>Delete</span>
+  </button>
+</mat-menu>

@@ -1,0 +1,276 @@
+<div id="section-table">
+  <form [formGroup]="form">
+    <vex-page-layout>
+      <vex-page-layout-header class="pb-16 flex flex-col items-start justify-center">
+        <div [class.container]="layoutCtrl.value === 'boxed'" [class.px-gutter]="layoutCtrl.value === 'fullwidth'" class="w-full flex flex-col sm:flex-row justify-between">
+          <div>
+            <h1 class="title mt-0 mb-1">Invoice Report</h1>
+            <vex-breadcrumbs [crumbs]="['Menu Tab Module', 'Report Management',  'Invoice Report']"></vex-breadcrumbs>
+          </div>
+        </div>
+      </vex-page-layout-header>
+      <vex-page-layout-content [class.container]="layoutCtrl.value === 'boxed'" [class.px-gutter]="layoutCtrl.value === 'fullwidth'" class="-mt-6">
+        <div class="card overflow-auto -mt-16">
+          <div class="bg-app-bar px-6 h-16 border-b sticky left-0 flex items-center">
+            <h2 class="title my-0 ltr:pr-4 rtl:pl-4 ltr:mr-4 rtl:ml-4 ltr:border-r rtl:border-l hidden sm:block flex-none">
+              <span>Invoice Report</span>
+            </h2>
+            <h2 class="title my-0 ltr:pr-4 rtl:pl-4 ltr:mr-4 rtl:ml-4 ltr:border-r rtl:border-l hidden sm:block flex-none">
+              <span>INVOICE = {{dataSource.data.length}} | STOPS = {{getStops()}}</span>
+            </h2>
+            <span class="flex-1"></span>
+            <div class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+              <mat-icon class="icon-sm text-secondary" svgIcon="mat:payment"></mat-icon>
+              <mat-select [formControl]="locationCtrl" aria-required="true" class="px-4 py-2 border-0 outline-none w-full bg-transparent"
+                placeholder="Location">
+                <mat-option *ngFor="let e of locationList" [value]="e.id">{{ e.code }} </mat-option>
+              </mat-select>
+            </div>
+            <div class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+              <input [matDatepicker]="datepickerRef" formControlName="deliveryDate" matInput required placeholder="Delivery Date">
+              <mat-datepicker-toggle [for]="datepickerRef" class="block" matSuffix></mat-datepicker-toggle>
+              <mat-datepicker #datepickerRef></mat-datepicker>
+            </div>
+            <div class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+              <mat-select [formControl]="deliveryRouteCtrl" aria-required="true" class="px-4 py-2 border-0 outline-none w-full bg-transparent"
+                placeholder="Delivery Route">
+                <mat-option *ngFor="let e of deliveryRouteList" [value]="e.id">{{ e.code }} </mat-option>
+              </mat-select>
+            </div>
+            <button *ngIf="access === userPermission.FullAccess" (click)="openInvoiceList()" class="ml-4 flex-none"
+              color="primary" mat-mini-fab matTooltip="Select Invoice" type="button">
+              <mat-icon svgIcon="mat:add"></mat-icon>
+            </button>
+          </div>
+
+          <table @stagger [dataSource]="dataSource" class="w-full" mat-table matSort>
+            <!-- Text Columns -->
+            <ng-container *ngFor="let column of columns;">
+              <ng-container *ngIf="column.type === 'text'" [matColumnDef]="column.property">
+                <th *matHeaderCellDef class="uppercase" mat-header-cell mat-sort-header> {{ column.label }}</th>
+                <div *ngIf="column.property === 'deliveryDate'; else isNotDate">
+                  <td *matCellDef="let row" mat-cell>
+                     <ng-container> {{ formatDateOnly(row[column.property]) }} </ng-container>
+                  </td>
+               </div>
+               <ng-template #isNotDate>
+                 <td *matCellDef="let row" [ngClass]="column.cssClasses" mat-cell>{{ row[column.property] }}</td>
+               </ng-template>
+                
+              </ng-container>
+            </ng-container>
+
+            <!-- Number Columns -->
+            <ng-container *ngFor="let column of columns;">
+              <ng-container *ngIf="column.type === 'number'" [matColumnDef]="column.property">
+                <th *matHeaderCellDef class="uppercase" mat-header-cell mat-sort-header> {{ column.label }}</th>
+                <div *ngIf="column.property === 'deliveryRoute'; else isNotRoute">
+                  <td *matCellDef="let row" mat-cell>
+                     <ng-container> {{ getRoute(row[column.property]) }} </ng-container>
+                  </td>
+               </div>
+               <ng-template #isNotRoute>
+                 <td *matCellDef="let row" [ngClass]="column.cssClasses" mat-cell>{{ row[column.property] }}</td>
+               </ng-template>
+              </ng-container>
+            </ng-container>
+
+            <!-- Action Column -->
+            <ng-container matColumnDef="actions" style="width: 25px;">
+              <th *matHeaderCellDef mat-header-cell mat-sort-header style="width: 25px;">ACTION</th>
+                <td *matCellDef="let row" class="w-10 text-secondary" mat-cell style="width: 25px;" align="center">
+                  <button *ngIf="access === userPermission.FullAccess" (click)="deleteInvoice(row)">
+                    <mat-icon svgIcon="mat:delete" matTooltip="Delete Selected Invoice"></mat-icon>
+                  </button>
+                </td>
+            </ng-container>
+
+            <tr *matHeaderRowDef="visibleColumns" mat-header-row></tr>
+            <tr *matRowDef="let row; columns: visibleColumns;"
+                @fadeInUp
+                class="hover:bg-hover trans-ease-out cursor-pointer"
+                mat-row></tr>
+          </table>
+        </div>
+      </vex-page-layout-content>
+    </vex-page-layout>
+  </form>
+  <span style="float: right; padding-right: 50px;">
+    <button *ngIf="access === userPermission.FullAccess" mat-flat-button (click)="clear()" style="margin: 5px;">Clear</button>
+    <button *ngIf="access === userPermission.FullAccess" [disabled]="dataSource.data.length === 0" color="primary" mat-flat-button (click)="print()" style="margin: 5px;">Print</button>
+  </span>
+  <mat-menu #columnFilterMenu="matMenu" xPosition="before" yPosition="below">
+    <button (click)="toggleColumnVisibility(column, $event)" *ngFor="let column of columns"
+      class="checkbox-item mat-menu-item">
+      <mat-checkbox (click)="$event.stopPropagation()" [(ngModel)]="column.visible" color="primary">
+        {{ column.label }}
+      </mat-checkbox>
+    </button>
+  </mat-menu>
+</div>
+
+<!-- PRINT LAYOUT ------------------------------------------------------------------------------------------------------------------------------------------------------->
+<body id="section-print">
+  <div id="page" *ngFor="let data of invoiceDataList">
+    <div id="page-container">
+      <div id="content-wrap">
+        <div  *ngIf="data.orderStatusId=== 9; else notRGA" class="flex-parent">
+          <div class="flex-child-left">
+            <img src={{data.imagePath}} style="width: 200px;">
+          </div>
+          <div class="flex-child-center-fl">
+            <div class="flex-parent">
+              <span class="flex-child-center-fl" style="font-weight: bold;">RETURN GOOD AUTHORIZATION</span>
+            </div>
+            <div class="flex-parent">
+              <span class="flex-child-center-fl">PFOS RGA NUMBER: {{ data.orderNumber}}</span>
+            </div>
+            <div class="flex-parent">
+              <span class="flex-child-center-fl">THIS IS NOT A CREDIT, CREDIT WILL FOLLOW</span>
+            </div>
+          </div>
+          <div class="flex-child-right"><div style="text-align: center; font-weight: bold; font-size: x-large; padding-left: 25px;">RGA</div>
+            <div *ngIf="!data.isQuote">
+              <ngx-barcode [bc-value]="data.orderNumber" [bc-height]="25" [bc-width]="2" [bc-margin-left]="50" [bc-display-value]="false"></ngx-barcode>
+            </div>
+          </div>
+        </div>
+        <ng-template #notRGA>
+          <div class="flex-parent">
+            <div class="flex-child-left">
+              <img src={{data.imagePath}} style="width: 200px;">
+            </div>
+            <div *ngIf="!data.isQuote" class="flex-child-center-fl">
+              <span *ngIf="data.isCreditMemo">PFOS CREDIT MEMO: {{ data.orderNumber}}</span>
+              <span *ngIf="!data.isCreditMemo">PFOS ORDER NUMBER: {{ data.orderNumber}}</span>
+            </div>
+            <div *ngIf="data.isQuote" class="flex-child-center-l">PFOS QUOTE NUMBER: {{ data.quoteNumber}}</div>
+            <div class="flex-child-right">SALES ORDER: {{ data.invoiceNumber}}
+              <div *ngIf="!data.isQuote">
+                <ngx-barcode [bc-value]="data.orderNumber" [bc-height]="25" [bc-width]="2" [bc-margin-left]="50" [bc-display-value]="false"></ngx-barcode>
+              </div>
+            </div>
+          </div>
+        </ng-template>
+        <div class="flex-parent">
+          <div class="flex-child-left">{{ data.address }}</div>
+          <div class="flex-child-right">PRINTED DATE/TIME: {{ formatDate(data.printDate) }}</div>
+        </div>
+        <div class="flex-parent">
+          <div class="flex-child-left">TEL: {{ data.phoneNumber }}</div>
+          <div class="flex-child-right">WEBSITE: {{ data.website}}</div>
+        </div>
+
+        <div class="flex-divider">___________________________________________________________________________________________________________________</div>
+
+        <div class="flex-parent">
+          <div class="flex-child-left-l">SOLD TO: {{ data.soldTo }}</div>
+          <div class="flex-child-left-l">SHIP TO: {{ data.shipTo }}</div>
+        </div>
+      
+        <div class="flex-parent">
+          <div class="flex-child-left-l">{{ data.soldToAddress }}</div>
+          <div class="flex-child-left-l">{{ data.shipToAddress }}</div>
+        </div>
+      
+        <div class="flex-parent">
+          <div class="flex-child-left-l">{{ data.soldToAddress2 }}</div>
+          <div class="flex-child-left-l">{{ data.shipToAddress2 }}</div>
+        </div>
+      
+        <div class="flex-divider">___________________________________________________________________________________________________________________</div>
+
+        <div class="flex-parent">
+          <div class="flex-child-center">ACCOUNT</div>
+          <div class="flex-child-center">PHONE</div>
+          <div class="flex-child-center">PO/RO</div>
+          <div class="flex-child-center">TERMS</div>
+          <div class="flex-child-center">SOLD BY</div>
+        </div>
+      
+        <div class="flex-parent">
+          <div class="flex-child-center">{{ data.accountNumber}}</div>
+          <div class="flex-child-center">{{ data.customerPhoneNumber }}</div>
+          <div class="flex-child-center">{{ data.purchaseOrderNumber }}</div>
+          <div class="flex-child-center">{{ data.customerTerms }}</div>
+          <div class="flex-child-center">{{ data.soldBy }}</div>
+        </div>
+      
+        <div class="flex-divider">___________________________________________________________________________________________________________________</div>
+
+        <div class="flex-parent">
+          <div class="flex-child-center-h-70">QTY</div>
+          <div class="flex-child-center-h-150">ITEM NO</div>
+          <div class="flex-child-center-h">DESCRIPTION-PARTSLINK-LOCATION</div>
+          <div *ngIf="data.orderStatusId !== 9" class="flex-child-center-h-70">LIST</div>
+          <div class="flex-child-center-h-70">PRICE</div>
+          <div class="flex-child-center-h-70">EXT</div>
+        </div>
+        <div class="flex-parent-padded" *ngFor="let item of data.lineItems">
+          <div class="flex-child-center-70">{{ item.quantity }}&nbsp;&nbsp;&nbsp;{{ item.quantity }}</div>
+          <div class="flex-child-left-l-150">{{ item.partNumber }}</div>
+          <div class="flex-child-left">{{ item.description }}</div>
+          <div *ngIf="data.orderStatusId !== 9" class="flex-child-right-70">{{ item.lprice }}</div>
+          <div class="flex-child-right-70">{{ item.price }}</div>
+          <div class="flex-child-right-70">{{ item.extPrice }}</div>
+        </div>
+      
+        <div *ngIf="data.orderStatusId === 9">
+          <div class="flex-parent">
+            <div class="flex-child-left">RETURN REASON: {{ data.rgaReason}}</div>
+          </div>
+          <div class="flex-parent">
+            <div class="flex-child-left">NOTES: {{ data.rgaReasonNotes}}</div>
+          </div>
+          <div class="flex-parent">
+            <div class="flex-child-left">RGA TYPE: <span style="font-size: large; font-weight: bold;">{{ data.rgaType }}</span></div>
+          </div>
+        </div> 
+
+        <div>TOTAL QUANTITY: {{ data.totalQuantity }}</div>
+        <div class="flex-parent">
+          <div class="flex-child-left">NOTES: {{ data.notes}}</div>
+        </div>
+      
+        <div class="flex-parent">
+          <div class="flex-child-left">
+            <span *ngIf="data.orderStatusId !== 9">ORDERED BY: {{ data.orderedBy}}</span>
+          </div>
+          <div class="flex-child-left">PHONE: {{ data.orderedByPhone}}</div>
+        </div>
+      
+        <div class="flex-parent">
+          <div class="flex-child-left">RECEIVED BY: _______________________</div>
+          <div class="flex-child-left">PAYMENT TYPE: _______________________</div>
+        </div>
+      
+        <div style="font-size: larger; font-weight: bolder;">{{data.orderType }} {{ data.zone }}</div>
+      
+        <div class="flex-parent">
+          <div class="flex-child-left">
+            <span *ngIf="data.orderStatusId !== 9; else isRGA">EXPECTED DELIVERY DATE: {{ data.deliveryDate }}</span>
+            <ng-template #isRGA>
+              <span>EXPECTED PICKUP DATE: {{ data.deliveryDate }}</span>
+            </ng-template>
+          </div>
+          <!-- <div class="flex-child-left">EXPECTED DELIVERY DATE: {{ data.deliveryDate }}</div> -->
+          <div class="flex-child-right-l-100">SUB TOTAL:</div>
+          <div class="flex-child-right-l-75">{{ data.subTotal }}</div>
+        </div>
+      
+        <div class="flex-parent">
+          <div class="flex-child-left">{{ data.staticText1 }}</div>
+          <div class="flex-child-right-l-100">TAX:</div>
+          <div class="flex-child-right-l-75">{{ data.tax }}</div>
+        </div>
+      
+        <div class="flex-parent">
+          <div class="flex-child-left">{{ data.staticText2 }}</div>
+          <div class="flex-child-right-l-100">TOTAL:</div>
+          <div class="flex-child-right-l-75">{{ data.total }}</div>
+        </div>
+      </div> 
+    </div>
+  </div>
+</body>
+<!-- PRINT LAYOUT ------------------------------------------------------------------------------------------------------------------------------------------------------->

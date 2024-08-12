@@ -1,0 +1,246 @@
+<form [formGroup]="form">
+  <div class="flex items-center" mat-dialog-title>
+    <img [src]="imageDefault" class="avatar-sq mr-5">
+    <h2 class="headline m-0 flex-auto" style="padding-right: 30px;">Search Filters</h2>
+    <button class="text-secondary" mat-dialog-close mat-icon-button type="button">
+      <mat-icon svgIcon="mat:close"></mat-icon>
+    </button>
+  </div>
+
+  <mat-divider class="-mx-6 text-border"></mat-divider>
+  <mat-dialog-content class="flex flex-col">
+    <div class="bg-app-bar px-6 h-16 border-b sticky left-0 flex items-center">
+      <h2 class="title my-0 ltr:pr-4 rtl:pl-4 ltr:mr-4 rtl:ml-4 ltr:border-r rtl:border-l hidden sm:block flex-none">
+        <span>Column 1</span>
+      </h2>
+      <div
+        class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+        <input [matDatepicker]="col1FrRef" formControlName="col1FrDate" (dateChange)="onDateChange('col1ToDate')"
+          matInput required placeholder="From Date">
+        <mat-datepicker-toggle [for]="col1FrRef" class="block" matSuffix></mat-datepicker-toggle>
+        <mat-datepicker #col1FrRef></mat-datepicker>
+      </div>
+      <div
+        class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+        <input [matDatepicker]="col1ToRef" [min]="form.get('col1FrDate').value" formControlName="col1ToDate"
+          matInput required placeholder="To Date" [disabled]="!form.get('col1FrDate').value">
+        <mat-datepicker-toggle [for]="col1ToRef" class="block" matSuffix></mat-datepicker-toggle>
+        <mat-datepicker #col1ToRef></mat-datepicker>
+      </div>
+
+      <h2 class="title my-0 ltr:pr-4 rtl:pl-4 ltr:mr-4 rtl:ml-4 ltr:border-r rtl:border-l hidden sm:block flex-none" style="padding-left: 50px;">
+        <span>Column 7</span>
+      </h2>
+      <div
+        class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+        <input [matDatepicker]="col7FrRef" formControlName="col7FrDate" (dateChange)="onDateChange('col7ToDate')"
+          matInput required placeholder="From Date">
+        <mat-datepicker-toggle [for]="col7FrRef" class="block" matSuffix></mat-datepicker-toggle>
+        <mat-datepicker #col7FrRef></mat-datepicker>
+      </div>
+      <div
+        class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+        <input [matDatepicker]="col7ToRef" [min]="form.get('col7FrDate').value" formControlName="col7ToDate"
+          matInput required placeholder="To Date" [disabled]="!form.get('col7FrDate').value">
+        <mat-datepicker-toggle [for]="col7ToRef" class="block" matSuffix></mat-datepicker-toggle>
+        <mat-datepicker #col7ToRef></mat-datepicker>
+      </div>
+    </div>
+
+    <div class="bg-app-bar px-6 h-16 border-b sticky left-0 flex items-center">
+      <h2 class="title my-0 ltr:pr-4 rtl:pl-4 ltr:mr-4 rtl:ml-4 ltr:border-r rtl:border-l hidden sm:block flex-none">
+        <span>Column 2</span>
+      </h2>
+      <div
+        class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+        <input [matDatepicker]="col2FrRef" formControlName="col2FrDate" (dateChange)="onDateChange('col2ToDate')" 
+          matInput required placeholder="From Date">
+        <mat-datepicker-toggle [for]="col2FrRef" class="block" matSuffix></mat-datepicker-toggle>
+        <mat-datepicker #col2FrRef></mat-datepicker>
+      </div>
+      <div
+        class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+        <input [matDatepicker]="col2ToRef" [min]="form.get('col2FrDate').value" formControlName="col2ToDate"
+          matInput required placeholder="To Date" [disabled]="!form.get('col2FrDate').value">
+        <mat-datepicker-toggle [for]="col2ToRef" class="block" matSuffix></mat-datepicker-toggle>
+        <mat-datepicker #col2ToRef></mat-datepicker>
+      </div>
+
+      <h2 class="title my-0 ltr:pr-4 rtl:pl-4 ltr:mr-4 rtl:ml-4 ltr:border-r rtl:border-l hidden sm:block flex-none" style="padding-left: 50px;">
+        <span>Column 8</span>
+      </h2>
+      <div
+        class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+        <input [matDatepicker]="col8FrRef" formControlName="col8FrDate" (dateChange)="onDateChange('col8ToDate')"
+          matInput required placeholder="From Date">
+        <mat-datepicker-toggle [for]="col8FrRef" class="block" matSuffix></mat-datepicker-toggle>
+        <mat-datepicker #col8FrRef></mat-datepicker>
+      </div>
+      <div
+        class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+        <input [matDatepicker]="col8ToRef" [min]="form.get('col8FrDate').value" formControlName="col8ToDate"
+          matInput required placeholder="To Date" [disabled]="!form.get('col8FrDate').value">
+        <mat-datepicker-toggle [for]="col8ToRef" class="block" matSuffix></mat-datepicker-toggle>
+        <mat-datepicker #col8ToRef></mat-datepicker>
+      </div>
+    </div>
+
+    <div class="bg-app-bar px-6 h-16 border-b sticky left-0 flex items-center">
+      <h2 class="title my-0 ltr:pr-4 rtl:pl-4 ltr:mr-4 rtl:ml-4 ltr:border-r rtl:border-l hidden sm:block flex-none">
+        <span>Column 3</span>
+      </h2>
+      <div
+        class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+        <input [matDatepicker]="col3FrRef" formControlName="col3FrDate" (dateChange)="onDateChange('col3ToDate')"
+          matInput required placeholder="From Date">
+        <mat-datepicker-toggle [for]="col3FrRef" class="block" matSuffix></mat-datepicker-toggle>
+        <mat-datepicker #col3FrRef></mat-datepicker>
+      </div>
+      <div
+        class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+        <input [matDatepicker]="col3ToRef" [min]="form.get('col3FrDate').value" formControlName="col3ToDate"
+          matInput required placeholder="To Date" [disabled]="!form.get('col3FrDate').value">
+        <mat-datepicker-toggle [for]="col3ToRef" class="block" matSuffix></mat-datepicker-toggle>
+        <mat-datepicker #col3ToRef></mat-datepicker>
+      </div>
+
+      <h2 class="title my-0 ltr:pr-4 rtl:pl-4 ltr:mr-4 rtl:ml-4 ltr:border-r rtl:border-l hidden sm:block flex-none" style="padding-left: 50px;">
+        <span>Column 9</span>
+      </h2>
+      <div
+        class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+        <input [matDatepicker]="col9FrRef" formControlName="col9FrDate" (dateChange)="onDateChange('col9ToDate')"
+          matInput required placeholder="From Date">
+        <mat-datepicker-toggle [for]="col9FrRef" class="block" matSuffix></mat-datepicker-toggle>
+        <mat-datepicker #col9FrRef></mat-datepicker>
+      </div>
+      <div
+        class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+        <input [matDatepicker]="col9ToRef" [min]="form.get('col9FrDate').value" formControlName="col9ToDate"
+          matInput required placeholder="To Date" [disabled]="!form.get('col9FrDate').value">
+        <mat-datepicker-toggle [for]="col9ToRef" class="block" matSuffix></mat-datepicker-toggle>
+        <mat-datepicker #col9ToRef></mat-datepicker>
+      </div>
+    </div>
+
+    <div class="bg-app-bar px-6 h-16 border-b sticky left-0 flex items-center">
+      <h2 class="title my-0 ltr:pr-4 rtl:pl-4 ltr:mr-4 rtl:ml-4 ltr:border-r rtl:border-l hidden sm:block flex-none">
+        <span>Column 4</span>
+      </h2>
+      <div
+        class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+        <input [matDatepicker]="col4FrRef" formControlName="col4FrDate" (dateChange)="onDateChange('col4ToDate')"
+          matInput required placeholder="From Date">
+        <mat-datepicker-toggle [for]="col4FrRef" class="block" matSuffix></mat-datepicker-toggle>
+        <mat-datepicker #col4FrRef></mat-datepicker>
+      </div>
+      <div
+        class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+        <input [matDatepicker]="col4ToRef" [min]="form.get('col4FrDate').value" formControlName="col4ToDate"
+          matInput required placeholder="To Date" [disabled]="!form.get('col4FrDate').value">
+        <mat-datepicker-toggle [for]="col4ToRef" class="block" matSuffix></mat-datepicker-toggle>
+        <mat-datepicker #col4ToRef></mat-datepicker>
+      </div>
+
+      <h2 class="title my-0 ltr:pr-4 rtl:pl-4 ltr:mr-4 rtl:ml-4 ltr:border-r rtl:border-l hidden sm:block flex-none" style="padding-left: 50px;">
+        <span>Column 10</span>
+      </h2>
+      <div
+        class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+        <input [matDatepicker]="col10FrRef" formControlName="col10FrDate" (dateChange)="onDateChange('col10ToDate')"
+          matInput required placeholder="From Date">
+        <mat-datepicker-toggle [for]="col10FrRef" class="block" matSuffix></mat-datepicker-toggle>
+        <mat-datepicker #col10FrRef></mat-datepicker>
+      </div>
+      <div
+        class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+        <input [matDatepicker]="col10ToRef" [min]="form.get('col10FrDate').value" formControlName="col10ToDate"
+          matInput required placeholder="To Date" [disabled]="!form.get('col10FrDate').value">
+        <mat-datepicker-toggle [for]="col10ToRef" class="block" matSuffix></mat-datepicker-toggle>
+        <mat-datepicker #col10ToRef></mat-datepicker>
+      </div>
+    </div>
+
+    <div class="bg-app-bar px-6 h-16 border-b sticky left-0 flex items-center">
+      <h2 class="title my-0 ltr:pr-4 rtl:pl-4 ltr:mr-4 rtl:ml-4 ltr:border-r rtl:border-l hidden sm:block flex-none">
+        <span>Column 5</span>
+      </h2>
+      <div
+        class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+        <input [matDatepicker]="col5FrRef" formControlName="col5FrDate" (dateChange)="onDateChange('col5ToDate')"
+          matInput required placeholder="From Date">
+        <mat-datepicker-toggle [for]="col5FrRef" class="block" matSuffix></mat-datepicker-toggle>
+        <mat-datepicker #col5FrRef></mat-datepicker>
+      </div>
+      <div
+        class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+        <input [matDatepicker]="col5ToRef" [min]="form.get('col5FrDate').value" formControlName="col5ToDate"
+          matInput required placeholder="To Date" [disabled]="!form.get('col5FrDate').value">
+        <mat-datepicker-toggle [for]="col5ToRef" class="block" matSuffix></mat-datepicker-toggle>
+        <mat-datepicker #col5ToRef></mat-datepicker>
+      </div>
+
+      <h2 class="title my-0 ltr:pr-4 rtl:pl-4 ltr:mr-4 rtl:ml-4 ltr:border-r rtl:border-l hidden sm:block flex-none" style="padding-left: 50px;">
+        <span>Column 11</span>
+      </h2>
+      <div
+        class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+        <input [matDatepicker]="col11FrRef" formControlName="col11FrDate" (dateChange)="onDateChange('col11ToDate')"
+          matInput required placeholder="From Date">
+        <mat-datepicker-toggle [for]="col11FrRef" class="block" matSuffix></mat-datepicker-toggle>
+        <mat-datepicker #col11FrRef></mat-datepicker>
+      </div>
+      <div
+        class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+        <input [matDatepicker]="col11ToRef" [min]="form.get('col11FrDate').value" formControlName="col11ToDate"
+          matInput required placeholder="To Date" [disabled]="!form.get('col11FrDate').value">
+        <mat-datepicker-toggle [for]="col11ToRef" class="block" matSuffix></mat-datepicker-toggle>
+        <mat-datepicker #col11ToRef></mat-datepicker>
+      </div>
+    </div>
+
+    <div class="bg-app-bar px-6 h-16 border-b sticky left-0 flex items-center">
+      <h2 class="title my-0 ltr:pr-4 rtl:pl-4 ltr:mr-4 rtl:ml-4 ltr:border-r rtl:border-l hidden sm:block flex-none">
+        <span>Column 6</span>
+      </h2>
+      <div
+        class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+        <input [matDatepicker]="col6FrRef" formControlName="col6FrDate" (dateChange)="onDateChange('col6ToDate')"
+          matInput required placeholder="From Date">
+        <mat-datepicker-toggle [for]="col6FrRef" class="block" matSuffix></mat-datepicker-toggle>
+        <mat-datepicker #col6FrRef></mat-datepicker>
+      </div>
+      <div
+        class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+        <input [matDatepicker]="col6ToRef" [min]="form.get('col6FrDate').value" formControlName="col6ToDate"
+          matInput required placeholder="To Date" [disabled]="!form.get('col6FrDate').value">
+        <mat-datepicker-toggle [for]="col6ToRef" class="block" matSuffix></mat-datepicker-toggle>
+        <mat-datepicker #col6ToRef></mat-datepicker>
+      </div>
+
+      <h2 class="title my-0 ltr:pr-4 rtl:pl-4 ltr:mr-4 rtl:ml-4 ltr:border-r rtl:border-l hidden sm:block flex-none" style="padding-left: 50px;">
+        <span>Column 12</span>
+      </h2>
+      <div
+        class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+        <input [matDatepicker]="col12FrRef" formControlName="col12FrDate" (dateChange)="onDateChange('col12ToDate')"
+          matInput required placeholder="From Date">
+        <mat-datepicker-toggle [for]="col12FrRef" class="block" matSuffix></mat-datepicker-toggle>
+        <mat-datepicker #col12FrRef></mat-datepicker>
+      </div>
+      <div
+        class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+        <input [matDatepicker]="col12ToRef" [min]="form.get('col12FrDate').value" formControlName="col12ToDate"
+          matInput required placeholder="To Date" [disabled]="!form.get('col12FrDate').value">
+        <mat-datepicker-toggle [for]="col12ToRef" class="block" matSuffix></mat-datepicker-toggle>
+        <mat-datepicker #col12ToRef></mat-datepicker>
+      </div>
+    </div>
+
+  </mat-dialog-content>
+</form>
+<mat-divider class="-mx-6 text-border"></mat-divider>
+<mat-dialog-actions *ngIf="access === userPermission.FullAccess" align="end">
+  <button mat-button mat-dialog-close type="button">Cancel</button>
+  <button color="primary" mat-flat-button (click)="applyCustomerSalesSearchFilter()">Apply</button>
+</mat-dialog-actions>

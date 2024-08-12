@@ -1,0 +1,421 @@
+<form (ngSubmit)="save()" [formGroup]="form">
+   <div class="flex items-center" mat-dialog-title>
+      <img [src]="imageDefault" class="avatar-sq mr-5">
+      <h2 *ngIf="form.get('partNumber').value" class="headline m-0 flex-auto">{{ form.get('partNumber').value}}</h2>
+      <h2 *ngIf="!form.get('partNumber').value" class="headline m-0 flex-auto">New Product</h2>
+      <button [matMenuTriggerFor]="settingsMenu" class="text-secondary" mat-icon-button type="button">
+         <mat-icon svgIcon="mat:more_vert"></mat-icon>
+      </button>
+      <button class="text-secondary" mat-dialog-close mat-icon-button type="button">
+         <mat-icon svgIcon="mat:close"></mat-icon>
+      </button>
+   </div>
+   <mat-divider class="-mx-6 text-border"></mat-divider>
+   <mat-dialog-content class="flex flex-col">
+      <mat-tab-group (selectedTabChange)="onTabChange($event)">
+         <mat-tab label="Product Details">
+            <div class="flex flex-col sm:flex-row gap-4">
+               <form (ngSubmit)="save()" [formGroup]="form">
+                  <div @fadeInUp class="card flex-auto">
+                     <div class="px-6 py-4 flex flex-col">
+                        <div class="flex flex-col sm:flex-row">
+                           <div class="flex-auto">
+                              <img [src]="defaults.imageUrl" (error)="setDefaultImage($event.target)" style="padding: 10px; min-height: 75px; min-width: 75px;">
+                           </div>
+                           <div class="sm:ml-6 flex-auto">
+                              <div class="flex flex-col sm:flex-row">
+                                 <mat-form-field class="flex-auto">
+                                    <mat-label>Part Number</mat-label>
+                                    <input cdkFocusInitial formControlName="partNumber" matInput required>
+                                 </mat-form-field>
+                                 <mat-form-field class="sm:ml-6 flex-auto">
+                                    <mat-label>Brand</mat-label>
+                                    <input cdkFocusInitial formControlName="brand" matInput required>
+                                 </mat-form-field>
+                              </div>
+                              <div *ngIf="isCreateMode()" class="flex flex-col sm:flex-row">
+                                 <mat-form-field class="flex-auto">
+                                    <mat-label>Parts Link Number</mat-label>
+                                    <input cdkFocusInitial formControlName="partsLinkNumber" matInput required>
+                                 </mat-form-field>
+                                 <mat-form-field class="sm:ml-6 flex-auto">
+                                    <mat-label>OEM Number</mat-label>
+                                    <input cdkFocusInitial formControlName="oemNumber" matInput required>
+                                 </mat-form-field>
+                              </div>
+                              <div class="flex flex-col sm:flex-row">
+                                 <mat-form-field class="flex-auto">
+                                    <mat-label>Part Description</mat-label>
+                                    <input cdkFocusInitial formControlName="partDescription" matInput required>
+                                 </mat-form-field>
+                              </div>
+                              <!------------------------------------------------------>
+                              <div class="flex flex-col sm:flex-row">
+                                 <mat-form-field *ngIf="filteredCategories$" class="flex-auto">
+                                    <mat-label>Category</mat-label>
+                                    <input [formControl]="categoryCtrl" [matAutocomplete]="autoCategory" matInput required>
+                                    <mat-autocomplete #autoCategory="matAutocomplete">
+                                       <mat-option *ngFor="let category of filteredCategories$ | async"
+                                          [value]="category.description"
+                                          (onSelectionChange)="onCategorySelectionChange(category.description)">
+                                          <span class="body-1">{{ category.description }} </span>
+                                       </mat-option>
+                                    </mat-autocomplete>
+                                    <button (click)="resetCategoryControl()" *ngIf="categoryCtrl.value" mat-icon-button
+                                       matSuffix type="button">
+                                       <mat-icon svgIcon="mat:close"></mat-icon>
+                                    </button>
+                                    <button *ngIf="!categoryCtrl.value" mat-icon-button matSuffix type="button">
+                                       <mat-icon svgIcon="mat:arrow_drop_down"></mat-icon>
+                                    </button>
+                                 </mat-form-field>
+                                 <mat-form-field *ngIf="filteredSequences$" class="sm:ml-6 flex-auto">
+                                    <mat-label>Sequence</mat-label>
+                                    <input [formControl]="sequenceCtrl" [matAutocomplete]="auto" matInput required>
+                                    <mat-autocomplete #auto="matAutocomplete">
+                                       <mat-option *ngFor="let sequence of filteredSequences$ | async"
+                                          [value]="sequence.categoryGroupDescription"
+                                          (onSelectionChange)="onSequenceSelectionChange(sequence.categoryGroupDescription)">
+                                          <span class="body-1">{{ sequence.categoryGroupDescription }} </span>
+                                       </mat-option>
+                                    </mat-autocomplete>
+                                    <button (click)="sequenceCtrl.reset()" *ngIf="sequenceCtrl.value" mat-icon-button
+                                       matSuffix type="button">
+                                       <mat-icon svgIcon="mat:close"></mat-icon>
+                                    </button>
+                                    <button *ngIf="!sequenceCtrl.value" mat-icon-button matSuffix type="button">
+                                       <mat-icon svgIcon="mat:arrow_drop_down"></mat-icon>
+                                    </button>
+                                 </mat-form-field>
+                              </div>
+                              <div class="flex flex-col sm:flex-row">
+                                 <mat-form-field class="flex-auto">
+                                    <mat-label>Status</mat-label>
+                                    <mat-select formControlName="statusId" aria-required="true">
+                                       <mat-option *ngFor="let e of statusList" [value]="e.id">{{ e.name }}
+                                       </mat-option>
+                                    </mat-select>
+                                 </mat-form-field>
+                                 <mat-form-field class="sm:ml-6 flex-auto">
+                                    <mat-label>Date Added</mat-label>
+                                    <input (click)="formDatepickerRef.open()" (focus)="formDatepickerRef.open()"
+                                       [matDatepicker]="formDatepickerRef" matInput readonly formControlName="dateAdded">
+                                    <mat-datepicker-toggle [for]="formDatepickerRef" matSuffix aria-required="true">
+                                    </mat-datepicker-toggle>
+                                    <!-- <mat-hint>Click on the input or the datepicker icon</mat-hint> -->
+                                    <mat-datepicker #formDatepickerRef></mat-datepicker>
+                                 </mat-form-field>
+                              </div>
+                              <div class="flex flex-col sm:flex-row">
+                                 <mat-form-field class="flex-auto">
+                                    <mat-label>Year From</mat-label>
+                                    <input cdkFocusInitial formControlName="yearFrom" type="number" min="0" matInput readonly>
+                                 </mat-form-field>
+                                 <mat-form-field class="sm:ml-6 flex-auto">
+                                    <mat-label>Year To</mat-label>
+                                    <input cdkFocusInitial formControlName="yearTo" type="number" min="0" matInput readonly>
+                                 </mat-form-field>
+                              </div>
+                              <!------------------------------------------------------>
+                              <div class="flex flex-col sm:flex-row">
+                                 <mat-form-field class="flex-auto">
+                                    <mat-label>Previous Cost</mat-label>
+                                    <input cdkFocusInitial formControlName="previousCost" type="number" min="0" matInput
+                                       required>
+                                 </mat-form-field>
+                                 <mat-form-field class="sm:ml-6 flex-auto">
+                                    <mat-label>Current Cost</mat-label>
+                                    <input cdkFocusInitial formControlName="currentCost" type="number" min="0" matInput
+                                       required>
+                                 </mat-form-field>
+                              </div>
+                              <div class="flex flex-col sm:flex-row">
+                                 <mat-form-field class="flex-auto">
+                                    <mat-label>OEM List Price</mat-label>
+                                    <input cdkFocusInitial formControlName="oemListPrice" matInput type="number">
+                                 </mat-form-field>
+                                 <mat-form-field class="sm:ml-6 flex-auto">
+                                    <mat-label>Part Size</mat-label>
+                                    <mat-select formControlName="partSizeId" aria-required="true">
+                                       <mat-option *ngFor="let e of partSizeList" [value]="e.id">{{ e.name }}
+                                       </mat-option>
+                                    </mat-select>
+                                 </mat-form-field>
+                              </div>
+                              <div class="flex flex-col sm:flex-row">
+                                 <mat-form-field class="flex-auto">
+                                    <mat-label>Price Level 1</mat-label>
+                                    <input cdkFocusInitial formControlName="priceLevel1" type="number" min="0" matInput
+                                       required>
+                                 </mat-form-field>
+                                 <mat-form-field class="sm:ml-6 flex-auto">
+                                    <mat-label>Price Level 2</mat-label>
+                                    <input cdkFocusInitial formControlName="priceLevel2" type="number" min="0" matInput
+                                       required>
+                                 </mat-form-field>
+                              </div>
+                              <div class="flex flex-col sm:flex-row">
+                                 <mat-form-field class="flex-auto">
+                                    <mat-label>Price Level 3</mat-label>
+                                    <input cdkFocusInitial formControlName="priceLevel3" type="number" min="0" matInput
+                                       required>
+                                 </mat-form-field>
+                                 <mat-form-field class="sm:ml-6 flex-auto">
+                                    <mat-label>Price Level 4</mat-label>
+                                    <input cdkFocusInitial formControlName="priceLevel4" type="number" min="0" matInput
+                                       required>
+                                 </mat-form-field>
+                              </div>
+                              <div class="flex flex-col sm:flex-row">
+                                 <mat-form-field class="flex-auto">
+                                    <mat-label>Price Level 5</mat-label>
+                                    <input cdkFocusInitial formControlName="priceLevel5" type="number" min="0" matInput
+                                       required>
+                                 </mat-form-field>
+                                 <mat-form-field class="sm:ml-6 flex-auto">
+                                    <mat-label>Price Level 6</mat-label>
+                                    <input cdkFocusInitial formControlName="priceLevel6" type="number" min="0" matInput
+                                       required>
+                                 </mat-form-field>
+                              </div>
+                              <div class="flex flex-col sm:flex-row">
+                                 <mat-form-field class="flex-auto">
+                                    <mat-label>Price Level 7</mat-label>
+                                    <input cdkFocusInitial formControlName="priceLevel7" type="number" min="0" matInput
+                                       required>
+                                 </mat-form-field>
+                                 <mat-form-field class="sm:ml-6 flex-auto">
+                                    <mat-label>Price Level 8</mat-label>
+                                    <input cdkFocusInitial formControlName="priceLevel8" type="number" min="0" matInput
+                                       required>
+                                 </mat-form-field>
+                              </div>
+                           </div>
+                        </div>
+                        <div class="flex flex-col sm:flex-row">
+                           <mat-form-field class="flex-auto">
+                              <mat-label>Image URL</mat-label>
+                              <input cdkFocusInitial formControlName="imageUrl" matInput required>
+                           </mat-form-field>
+                        </div>
+                        
+                     </div>
+                  </div>
+               </form>
+               <!----------------------------------------------------->
+               <!-- <form (ngSubmit)="save()" [formGroup]="form">
+                  <div @fadeInUp class="card flex-auto">
+                     <div class="px-6 py-4 flex flex-col">
+                        <div class="flex flex-col sm:flex-row">
+                           <mat-form-field class="flex-auto">
+                              <mat-label>Previous Cost</mat-label>
+                              <input cdkFocusInitial formControlName="previousCost" type="number" min="0" matInput
+                                 required>
+                           </mat-form-field>
+                           <mat-form-field class="sm:ml-6 flex-auto">
+                              <mat-label>Current Cost</mat-label>
+                              <input cdkFocusInitial formControlName="currentCost" type="number" min="0" matInput
+                                 required>
+                           </mat-form-field>
+                        </div>
+                        <div class="flex flex-col sm:flex-row">
+                           <mat-form-field class="flex-auto">
+                              <mat-label>OEM List Price</mat-label>
+                              <input cdkFocusInitial formControlName="oemListPrice" matInput type="number">
+                           </mat-form-field>
+                           <mat-form-field class="sm:ml-6 flex-auto">
+                              <mat-label>Part Size</mat-label>
+                              <mat-select formControlName="partSizeId" aria-required="true">
+                                 <mat-option *ngFor="let e of partSizeList" [value]="e.id">{{ e.name }}
+                                 </mat-option>
+                              </mat-select>
+                           </mat-form-field>
+                        </div>
+                        <div class="flex flex-col sm:flex-row">
+                           <mat-form-field class="flex-auto">
+                              <mat-label>Price Level 1</mat-label>
+                              <input cdkFocusInitial formControlName="priceLevel1" type="number" min="0" matInput
+                                 required>
+                           </mat-form-field>
+                           <mat-form-field class="sm:ml-6 flex-auto">
+                              <mat-label>Price Level 2</mat-label>
+                              <input cdkFocusInitial formControlName="priceLevel2" type="number" min="0" matInput
+                                 required>
+                           </mat-form-field>
+                        </div>
+                        <div class="flex flex-col sm:flex-row">
+                           <mat-form-field class="flex-auto">
+                              <mat-label>Price Level 3</mat-label>
+                              <input cdkFocusInitial formControlName="priceLevel3" type="number" min="0" matInput
+                                 required>
+                           </mat-form-field>
+                           <mat-form-field class="sm:ml-6 flex-auto">
+                              <mat-label>Price Level 4</mat-label>
+                              <input cdkFocusInitial formControlName="priceLevel4" type="number" min="0" matInput
+                                 required>
+                           </mat-form-field>
+                        </div>
+                        <div class="flex flex-col sm:flex-row">
+                           <mat-form-field class="flex-auto">
+                              <mat-label>Price Level 5</mat-label>
+                              <input cdkFocusInitial formControlName="priceLevel5" type="number" min="0" matInput
+                                 required>
+                           </mat-form-field>
+                           <mat-form-field class="sm:ml-6 flex-auto">
+                              <mat-label>Price Level 6</mat-label>
+                              <input cdkFocusInitial formControlName="priceLevel6" type="number" min="0" matInput
+                                 required>
+                           </mat-form-field>
+                        </div>
+                        <div class="flex flex-col sm:flex-row">
+                           <mat-form-field class="flex-auto">
+                              <mat-label>Price Level 7</mat-label>
+                              <input cdkFocusInitial formControlName="priceLevel7" type="number" min="0" matInput
+                                 required>
+                           </mat-form-field>
+                           <mat-form-field class="sm:ml-6 flex-auto">
+                              <mat-label>Price Level 8</mat-label>
+                              <input cdkFocusInitial formControlName="priceLevel8" type="number" min="0" matInput
+                                 required>
+                           </mat-form-field>
+                        </div>
+                     </div>
+                  </div>
+               </form> -->
+               <!-- <div @fadeInUp class="card flex-auto">Hello</div> -->
+               <!-- <div>
+                  <mat-slide-toggle color="primary" labelPosition="before" [checked]="isActive" [(ngModel)]="isActive">Is Active</mat-slide-toggle>
+               </div> -->
+               <!----------------------------------------------------->
+               <!----------------------------------------------------->
+               <form *ngIf="isUpdateMode()" (ngSubmit)="save()" [formGroup]="form">
+                  <div @fadeInUp class="card flex-auto">
+                     <div class="px-6 py-4 flex flex-col">
+                        <div class="flex flex-col sm:flex-row">
+                           <table style="width: 100%;">
+                              <tr style="outline: thin solid">
+                                 <th style="text-align: left">Vnd Part #</th>
+                                 <th style="text-align: left">Vnd Cd</th>
+                                 <th style="text-align: left">Price</th>
+                                 <th style="text-align: left">Stk</th>
+                              </tr>
+                              <tr *ngFor="let item of defaults.vendorCatalogList" style="outline: thin solid">
+                                 <td>{{ item.vendorPartNumber }}</td>
+                                 <td>{{ item.vendorCode }}</td>
+                                 <td>{{ item.price }}</td>
+                                 <td>{{ item.onHand }}</td>
+                              </tr>
+                           </table>
+                        </div>
+                        <br>
+                        <br>
+                        <div class="flex flex-col sm:flex-row">
+                           <table style="width: 100%;">
+                              <tr style="outline: thin solid">
+                                 <th style="text-align: left">Parts Link</th>
+                                 <th style="text-align: left">OEM</th>
+                              </tr>
+                              <tr *ngFor="let item of defaults.partsLinkList" style="outline: thin solid">
+                                 <td>{{ item.partsLinkNumber }}</td>
+                                 <td>{{ item.oemNumber }}</td>
+                              </tr>
+                           </table>
+                        </div>
+                     </div>
+                  </div>
+                  <br>
+                  <br>
+                  <div *ngIf="isUpdateMode()" @fadeInUp class="card flex-auto">
+                     <div class="px-6 py-4 flex flex-col">
+                        <div class="flex flex-col sm:flex-row">
+                           <table style="width: 100%;">
+                              <tr style="outline: thin solid">
+                                 <th style="text-align: left">Location</th>
+                                 <th style="text-align: left">Qty</th>
+                                 <th style="text-align: left">Zoning</th>
+                                 <th style="text-align: left">Ht</th>
+                                 <!-- <th style="text-align: left">
+                                    <span (click)="createPartLocation()"
+                                       class="text-secondary bg-base text-hint cursor-pointer hover:bg-hover flex-none flex items-center justify-center">
+                                       <mat-icon class="icon-sm" svgIcon="mat:add"></mat-icon>
+                                    </span>
+                                 </th> -->
+                              </tr>
+                              <tr *ngFor="let item of locationList" style="outline: thin solid">
+                                 <td>{{ item.location }}</td>
+                                 <td>{{ item.quantity }}</td>
+                                 <td>{{ item.zoning }}</td>
+                                 <td>{{ item.height }}</td>
+                                 <!-- <td>
+                                    <div (click)="updatePartLocation(item)"
+                                       class="text-secondary bg-base text-hint cursor-pointer hover:bg-hover flex-none flex items-center justify-center">
+                                       <mat-icon class="icon-sm" svgIcon="mat:edit"></mat-icon>
+                                    </div>
+                                 </td> -->
+                              </tr>
+                           </table>
+                        </div>
+                     </div>
+                  </div>
+                  <br>
+                  <br>
+                  <div class="flex flex-col sm:flex-row">
+                     <div class="flex-auto" style="width: 150px;">
+                        <mat-slide-toggle color="primary" labelPosition="after" (change)="setCAProduct($event)" [checked]="isCAProduct">CA Product</mat-slide-toggle>
+                     </div>
+                     <div class="sm:ml-6 flex-auto">
+                        <mat-slide-toggle color="primary" labelPosition="after" (change)="setNVProduct($event)" [checked]="isNVProduct">NV Product</mat-slide-toggle>
+                     </div>
+                  </div>
+                  <br>
+                  <div class="flex flex-col sm:flex-row">
+                     <div class="flex-auto" style="width: 150px;">
+                        <mat-slide-toggle [formControl]="toggleActive" color="primary" labelPosition="after" [checked]="isActive">Active </mat-slide-toggle>
+                     </div>
+                     <div class="sm:ml-6 flex-auto">
+                        <mat-slide-toggle [formControl]="toggleAPI" color="primary" labelPosition="after" [checked]="isAPIAllowed">API Allowed </mat-slide-toggle>
+                     </div>
+                     
+                  </div>
+               </form>
+               <!----------------------------------------------------->
+               <!-- <mat-slide-toggle color="primary" labelPosition="before" [checked]="isActive" [(ngModel)]="isActive" (change)="onSliderChange($event)">Is Active</mat-slide-toggle> -->
+               
+            </div>
+         </mat-tab>
+         <mat-tab *ngIf="isUpdateMode()" label="Parts Cataloging">
+            <vex-parts-catalog-table [productId]="defaults.id" [partNumber]="defaults.partNumber">
+            </vex-parts-catalog-table>
+         </mat-tab>
+         <mat-tab *ngIf="isUpdateMode()" label="Parts Link & OEM">
+            <vex-parts-link-table [productId]="defaults.id" [partNumber]="defaults.partNumber"></vex-parts-link-table>
+         </mat-tab>
+         <mat-tab *ngIf="isUpdateMode()" label="Vendor Catalog">
+            <vex-vendor-catalog-table [productId]="defaults.id"></vex-vendor-catalog-table>
+         </mat-tab>
+      </mat-tab-group>
+   </mat-dialog-content>
+   <mat-dialog-actions *ngIf="access === userPermission.FullAccess && selectedTab === 0" align="end">
+      <button mat-button mat-dialog-close type="button">Cancel</button>
+      <button *ngIf="isCreateMode()" color="primary" mat-flat-button (click)="save()">Create Product</button>
+      <button *ngIf="isUpdateMode()" color="primary" mat-flat-button (click)="save()">Update Product</button>
+   </mat-dialog-actions>
+   <div class="p-6">
+      <div>
+         <mat-menu #settingsMenu="matMenu" xPosition="before" yPosition="below">
+            <button mat-menu-item>
+               <mat-icon svgIcon="mat:print"></mat-icon>
+               <span>Print</span>
+            </button>
+            <button mat-menu-item>
+               <mat-icon svgIcon="mat:download"></mat-icon>
+               <span>Export</span>
+            </button>
+            <button mat-menu-item>
+               <mat-icon svgIcon="mat:delete"></mat-icon>
+               <span>Delete</span>
+            </button>
+         </mat-menu>
+      </div>
+   </div>
+</form>

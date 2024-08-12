@@ -1,0 +1,203 @@
+<form [formGroup]="form">
+   <div class="flex items-center" mat-dialog-title>
+      <img [src]="imageDefault" class="avatar-sq mr-5">
+      <h2 *ngIf="form.get('accountNumber').value" class="headline m-0 flex-auto">Customer Account Number: {{ form.get('accountNumber').value }}</h2>
+      <h2 *ngIf="!form.get('accountNumber').value" class="headline m-0 flex-auto">New Payment</h2>
+
+      <div *ngIf="isCreateMode()">
+        <mat-form-field style="width: 230px;" class="sm:mt-6 sm:ml-6">
+          <mat-label>Name/Account/Phone Number</mat-label>
+          <input formControlName="customerFilter" matInput (keydown.enter)="openCustomerList()">
+        </mat-form-field>
+        <button *ngIf="access === userPermission.FullAccess" (click)="openCustomerList()" class="ml-4 flex-none"
+          color="primary" mat-mini-fab matTooltip="Select Customer" type="button">
+          <mat-icon svgIcon="mat:add"></mat-icon>
+        </button>
+      </div>
+      <button [matMenuTriggerFor]="settingsMenu" class="text-secondary" mat-icon-button type="button">
+         <mat-icon svgIcon="mat:more_vert"></mat-icon>
+      </button>
+      <button class="text-secondary" mat-dialog-close mat-icon-button type="button">
+         <mat-icon svgIcon="mat:close"></mat-icon>
+      </button>
+   </div>
+
+   <mat-divider class="-mx-6 text-border"></mat-divider>
+
+   <mat-dialog-content class="flex flex-col" style="height: 620px !important;">
+      <div *ngIf="(!currentCustomer && selectedCustomers.length > 0)" class="flex flex-col sm:flex-row">
+        <div>
+          <span style="font-size: large; float: left; padding-top: 10px;"><b>CUSTOMERS: </b>{{ selectedCustomerNames }}</span>
+        </div>
+      </div>
+      <div *ngIf="(currentCustomer)" class="flex flex-col sm:flex-row">
+        <div>
+          <span style="font-size: x-large; float: left; padding-top: 10px;">Credit: {{ creditBalance }}</span>  
+          <button class="text-secondary" mat-icon-button type="button" style="padding-top: 10px;" (click)="addCustomerCredit()">
+            <mat-icon svgIcon="mat:add"></mat-icon>
+          </button>
+        </div>
+         <mat-form-field class="sm:mt-6 sm:ml-6 flex-auto">
+           <mat-label>Customer/Business</mat-label>
+           <input formControlName="customerName" class="overflow-ellipsis-200" matTooltip="{{ form.get('customerName').value }}" matInput readonly>
+         </mat-form-field>
+         <mat-form-field class="mt-6 flex-auto">
+            <mat-label>Account Number</mat-label>
+            <input formControlName="accountNumber" matInput readonly>
+         </mat-form-field>
+         <mat-form-field class="mt-6 flex-auto">
+            <mat-label>Contact Name</mat-label>
+            <input formControlName="contactName" matInput readonly>
+         </mat-form-field>
+         <mat-form-field class="flex-auto" style="width: 5%;" readonly>
+            <mat-label>Price Level</mat-label>
+            <mat-select formControlName="priceLevelId" readonly>
+              <mat-option *ngFor="let e of priceLevelList" [value]="e.id" style="text-align: center;">{{ e.levelName }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field class="flex-auto" style="width: 10%;" readonly>
+            <mat-label>Payment Term</mat-label>
+            <mat-select formControlName="paymentTermId" >
+              <mat-option *ngFor="let e of paymentTermList" [value]="e.id" readonly>{{ e.termName }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field class="flex-auto" style="width: 5%;">
+            <mat-label>Discount</mat-label>
+            <input formControlName="discount" type="number" matInput style="text-align: right;" readonly>
+          </mat-form-field>
+       </div>
+      
+       <mat-divider class="-mx-6 text-border"></mat-divider>
+
+       <!---------------------------------------------------------------------------------------------------------------------------------------------------------------->
+       
+       <!--PAYMENT DETAIL TABLE--------------------------------------------------------------------------------------------->
+       <!-- <div *ngIf="isUpdateMode()" > -->
+        <table @stagger [dataSource]="dataSource" class="w-full" mat-table matSort (matSortChange)="sortDataMatTable($event)">
+          <!-- Checkbox Column -->
+          <ng-container matColumnDef="checkbox">
+            <th *matHeaderCellDef mat-header-cell>
+              <mat-checkbox (change)="$event ? masterToggle() : null" [checked]="selection.hasValue() && isAllSelected()"
+                [indeterminate]="selection.hasValue() && !isAllSelected()" color="primary">
+              </mat-checkbox>
+            </th>
+            <td *matCellDef="let row" class="w-4" mat-cell>
+              <mat-checkbox (change)="$event ? selection.toggle(row) : null" (click)="$event.stopPropagation()"
+                [checked]="selection.isSelected(row)" color="primary">
+              </mat-checkbox>
+            </td>
+          </ng-container>
+  
+          <!-- Text Columns -->
+          <ng-container *ngFor="let column of columns; trackBy: trackByProperty">
+            <ng-container *ngIf="column.type === 'text'" [matColumnDef]="column.property">
+              <th *matHeaderCellDef class="uppercase" mat-header-cell mat-sort-header> {{ column.label }}</th>
+                <div *ngIf="column.property === 'createdDate'">
+                   <td *matCellDef="let row" mat-cell>
+                      <ng-container>{{ formatDate(row[column.property]) }} </ng-container>
+                   </td>
+                </div>
+                <div *ngIf="column.property !== 'createdDate'">
+                  <td *matCellDef="let row" mat-cell>
+                    <ng-container>{{ row[column.property] }} </ng-container>
+                  </td>
+                </div>
+            </ng-container>
+          </ng-container>
+
+          <!-- Number Columns -->
+          <ng-container *ngFor="let column of columns; trackBy: trackByProperty">
+            <ng-container *ngIf="column.type === 'number'" [matColumnDef]="column.property">
+              <th *matHeaderCellDef class="uppercase" mat-header-cell mat-sort-header> {{ column.label }}</th>
+              <td *matCellDef="let row" mat-cell align="center">
+                <ng-container>{{ formatCurrency(row[column.property]) }} </ng-container>
+              </td>
+            </ng-container>
+          </ng-container>
+  
+          <tr *matHeaderRowDef="visibleColumns" mat-header-row></tr>
+          <div *ngIf="isUpdateMode()">
+            <tr *matRowDef="let row; columns: visibleColumns;" @fadeInUp class="hover:bg-hover trans-ease-out cursor-pointer" mat-row></tr>
+          </div>
+          <div *ngIf="isCreateMode()">
+            <tr (click)="selectInvoice(row)" *matRowDef="let row; columns: visibleColumns;" @fadeInUp class="hover:bg-hover trans-ease-out cursor-pointer" mat-row></tr>
+          </div>
+        </table>
+       <!-- </div> -->
+       <!---------------------------------------------------------------------------------------------------------------------------------------------------------------->
+   </mat-dialog-content>
+  </form>
+  <mat-divider class="-mx-6 text-border"></mat-divider>
+  <mat-divider class="-mx-6 text-border"></mat-divider>
+  <!-- <form *ngIf="form && currentCustomer !== undefined" [formGroup]="form"> -->
+  <form *ngIf="form" [formGroup]="form">
+    <div class="flex flex-col sm:flex-row">
+      <mat-form-field  *ngIf="currentCustomer" class="mt-6 flex-auto">
+        <mat-label>Use Credit Amount</mat-label>
+        <input formControlName="customerCreditAmountUsed" type="number" matInput (change)="validateCustomerCreditAmount()"
+        [readonly]="creditMemoList.length > 0">
+      </mat-form-field>
+
+      <mat-form-field class="mt-6 flex-auto">
+        <mat-label>Payment Date</mat-label>
+        <input [matDatepicker]="datepickerRef" [min]="todayDate" formControlName="paymentDate" matInput required>
+        <mat-datepicker-toggle [for]="datepickerRef" class="block" matSuffix></mat-datepicker-toggle>
+        <mat-datepicker #datepickerRef></mat-datepicker>
+      </mat-form-field>
+      
+      <mat-form-field class="mt-6 flex-auto">
+        <mat-label>Payment Type</mat-label>
+        <mat-select formControlName="paymentType" aria-required="true" (valueChange)="paymentTypeValueChange($event)" required
+          [disabled]="creditMemoList.length > 0">
+          <mat-option *ngFor="let e of paymentTypeListFiltered" [value]="e.code">{{ e.name }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field *ngIf="!isCashOrCreditSelected" class="mt-6" style="width: 200px;">
+        <mat-label>Reference Number</mat-label>
+        <input formControlName="referenceNumber" matInput>
+      </mat-form-field>
+      
+      <mat-form-field class="mt-6 flex-auto">
+        <mat-label>Payment Amount Due</mat-label>
+        <input formControlName="totalAmountDue" matInput required readonly>
+      </mat-form-field>
+      <mat-form-field class="mt-6 flex-auto">
+        <mat-label>Payment Amount</mat-label>
+        <input #paymentAmount formControlName="paymentAmount" (change)="getTotalAmountSelected()" (keyup.enter)="getTotalAmountSelected()" (keyup)="formatPaymentAmount(paymentAmount.value)" type="number" matInput required
+          [readonly]="creditMemoList.length > 0">
+      </mat-form-field>
+      <mat-form-field class="mt-6 flex-auto">
+        <mat-label>Credit Memo Amount</mat-label>
+        <input formControlName="creditMemoAmountUsed" type="number" matInput readonly>
+      </mat-form-field>
+      <mat-form-field class="sm:mt-6 sm:ml-6 flex-auto">
+        <mat-label>Payment Balance</mat-label>
+        <input formControlName="paymentBalance" matInput required readonly>
+      </mat-form-field>
+    </div>
+  </form>
+  <mat-dialog-actions *ngIf="access === userPermission.FullAccess" align="end">
+    <button *ngIf="isCreateMode() && isCreditSelected && currentCustomer" [disabled]="!currentCustomer" color="primary" mat-flat-button (click)="otherCredit()">Other Credit(s)</button>
+    <button *ngIf="isCreateMode() && customerCreditList && currentCustomer" [disabled]="!currentCustomer" color="primary" mat-flat-button (click)="viewCredit()">View Credit(s)</button>
+    <button *ngIf="isCreateMode()" mat-button mat-dialog-close type="button">Cancel</button>
+    <button *ngIf="isCreateMode()" [disabled]="this.selection.selected.length === 0 || (isCreditSelected && !currentCustomer)" color="primary" mat-flat-button (click)="save()">Create Payment</button>
+    <button *ngIf="isUpdateMode()" mat-button mat-dialog-close type="button">Close</button>
+  </mat-dialog-actions>
+
+<mat-menu #settingsMenu="matMenu" xPosition="before" yPosition="below">
+   <button mat-menu-item>
+      <mat-icon svgIcon="mat:print"></mat-icon>
+      <span>Print</span>
+   </button>
+   <button mat-menu-item>
+      <mat-icon svgIcon="mat:download"></mat-icon>
+      <span>Export</span>
+   </button>
+   <button mat-menu-item>
+      <mat-icon svgIcon="mat:delete"></mat-icon>
+      <span>Delete</span>
+   </button>
+</mat-menu>

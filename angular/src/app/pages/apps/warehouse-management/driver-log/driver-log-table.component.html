@@ -1,0 +1,278 @@
+<div id="section-table">
+  <vex-page-layout>
+    <vex-page-layout-header class="pb-16 flex flex-col items-start justify-center">
+      <div [class.container]="layoutCtrl.value === 'boxed'" [class.px-gutter]="layoutCtrl.value === 'fullwidth'"
+        class="w-full flex flex-col sm:flex-row justify-between">
+        <div>
+          <h1 class="title mt-0 mb-1">Driver Log</h1>
+          <vex-breadcrumbs [crumbs]="['Menu Tab Module', 'Warehouse Management',  'Driver Log']"></vex-breadcrumbs>
+        </div>
+      </div>
+    </vex-page-layout-header>
+  
+    <vex-page-layout-content [class.container]="layoutCtrl.value === 'boxed'" [class.px-gutter]="layoutCtrl.value === 'fullwidth'" class="-mt-6">
+      <div class="card overflow-auto -mt-16">
+        <div class="bg-app-bar px-6 h-16 border-b sticky left-0 flex items-center">
+          <h2 class="title my-0 ltr:pr-4 rtl:pl-4 ltr:mr-4 rtl:ml-4 ltr:border-r rtl:border-l hidden sm:block flex-none">
+            <span *ngIf="selection.isEmpty()">Driver Log</span>
+            <span *ngIf="selection.hasValue()">{{ selection.selected.length }}
+              Driver Log<span *ngIf="selection.selected.length > 1">s</span> selected</span>
+          </h2>
+  
+          <div *ngIf="selection.hasValue()" class="mr-4 pr-4 border-r flex-none">
+            <button (click)="deleteDriverLogs(selection.selected)" color="primary" mat-icon-button
+              matTooltip="Delete selected" type="button">
+              <mat-icon svgIcon="mat:delete"></mat-icon>
+            </button>
+  
+            <button color="primary" mat-icon-button matTooltip="Archive" type="button">
+              <mat-icon svgIcon="mat:folder"></mat-icon>
+            </button>
+          </div>
+  
+          <div
+            class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+            <mat-icon class="icon-sm text-secondary" svgIcon="mat:search"></mat-icon>
+            <input [formControl]="searchCtrl"  class="px-4 py-2 border-0 outline-none w-full bg-transparent"
+              placeholder="Search..." type="search" (keyup.enter)="searchDriverLogs()">
+          </div>
+          <span *ngIf="!!searchCtrl.value && searchCtrl.value.trim().length > 0">
+            <button (click)="searchDriverLogs()" class="ml-4 flex-none" color="primary" mat-mini-fab
+              matTooltip="Search Driver Logs" type="button">
+              <mat-icon svgIcon="mat:search"></mat-icon>
+            </button>
+          </span>
+          
+          <h2 class="title my-0 ltr:pr-4 rtl:pl-4 ltr:mr-4 rtl:ml-4 ltr:border-r rtl:border-l hidden sm:block flex-none" style="padding-left: 100px;">
+            <span>Date Search</span>
+          </h2>
+          <div class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+            <input [matDatepicker]="datepickerRef1" [formControl]="fromDateCtrl" (dateChange)="onDateChange()" matInput required placeholder="From Date...">
+              <mat-datepicker-toggle [for]="datepickerRef1" class="block" matSuffix></mat-datepicker-toggle>
+              <mat-datepicker #datepickerRef1></mat-datepicker>
+          </div>
+          <div class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+            <input [matDatepicker]="datepickerRef2" [min]="fromDateCtrl.value" [formControl]="toDateCtrl" matInput required placeholder="To Date...">
+              <mat-datepicker-toggle [for]="datepickerRef2" class="block" matSuffix></mat-datepicker-toggle>
+              <mat-datepicker #datepickerRef2></mat-datepicker>
+          </div>
+          <span *ngIf="fromDateCtrl.value && toDateCtrl.value">
+            <button (click)="searchDriverLogsByDate()" class="ml-4 flex-none" color="primary" mat-mini-fab
+              matTooltip="Search Driver Logs" type="button">
+              <mat-icon svgIcon="mat:search"></mat-icon>
+            </button>
+          </span>
+          <span *ngIf="fromDateCtrl.value && toDateCtrl.value">
+            <button *ngIf="access === userPermission.FullAccess" (click)="clearDateSearch()" class="ml-4 flex-none"
+              color="primary" mat-mini-fab matTooltip="Clear" type="button">
+              <mat-icon svgIcon="mat:clear"></mat-icon>
+            </button>
+          </span>
+        
+          <span class="flex-1"></span>
+  
+          <button [matMenuTriggerFor]="columnFilterMenu" class="ml-4 flex-none" mat-icon-button
+            matTooltip="Filter Columns" type="button">
+            <mat-icon svgIcon="mat:filter_list"></mat-icon>
+          </button>
+  
+          <button *ngIf="access === userPermission.FullAccess" (click)="createDriverLog()" class="ml-4 flex-none"
+            color="primary" mat-mini-fab matTooltip="Add Driver Log" type="button">
+            <mat-icon svgIcon="mat:add"></mat-icon>
+          </button>
+        </div>
+  
+        <table @stagger [dataSource]="dataSource" class="w-full" mat-table matSort (matSortChange)="sortDataMatTable($event)">
+          <!-- Checkbox Column -->
+          <ng-container matColumnDef="checkbox">
+            <th *matHeaderCellDef mat-header-cell>
+              <mat-checkbox (change)="$event ? masterToggle() : null" [checked]="selection.hasValue() && isAllSelected()"
+                [indeterminate]="selection.hasValue() && !isAllSelected()" color="primary">
+              </mat-checkbox>
+            </th>
+            <td *matCellDef="let row" class="w-4" mat-cell>
+              <mat-checkbox (change)="$event ? selection.toggle(row) : null" (click)="$event.stopPropagation()"
+                [checked]="selection.isSelected(row)" color="primary">
+              </mat-checkbox>
+            </td>
+          </ng-container>
+  
+          <!-- Image Column -->
+          <ng-container matColumnDef="imageUrl">
+            <th *matHeaderCellDef mat-header-cell></th>
+            <td *matCellDef="let row" class="tooltip-img w-16 min-w-16 pr-0" mat-cell>
+              <img [src]="row['imageUrl']" class="avatar h-16 w-16">
+              <table class="tooltiptext-img" style="min-width: 1000px important;">
+                <th class="overflow-ellipsis-wide h-8" title="{{ row.partNumber }} - {{ row.partDescription }}">
+                  <span>{{ row.partNumber }} - {{ row.partDescription }}</span>
+                </th>
+                <tr>
+                  <td><img [src]="row['imageUrl']" class="align-middle"></td>
+                </tr>
+              </table>
+            </td>
+          </ng-container>
+  
+           <!-- Text Columns -->
+           <ng-container *ngFor="let column of columns; trackBy: trackByProperty">
+            <ng-container *ngIf="column.type === 'text'" [matColumnDef]="column.property">
+              <th *matHeaderCellDef class="uppercase" mat-header-cell mat-sort-header> {{ column.label }}</th>
+                <div *ngIf="column.property === 'createdDate'; else isNotDate">
+                   <td *matCellDef="let row" mat-cell>
+                      <ng-container> {{ formatDate(row[column.property]) }} </ng-container>
+                   </td>
+                </div>
+                <ng-template #isNotDate>
+                  <td *matCellDef="let row" mat-cell>
+                    <ng-container><span style="float: left;">{{ row[column.property] }}</span></ng-container>
+                  </td>
+                </ng-template>
+            </ng-container>
+          </ng-container>
+  
+          <!-- Number Columns -->
+          <ng-container *ngFor="let column of columns; trackBy: trackByProperty">
+            <ng-container *ngIf="column.type === 'number'" [matColumnDef]="column.property">
+              <th *matHeaderCellDef class="uppercase" mat-header-cell mat-sort-header> {{ column.label }}</th>
+              <td *matCellDef="let row" mat-cell align="center">
+                <ng-container>{{ formatCurrency(row[column.property]) }} </ng-container>
+              </td>
+            </ng-container>
+          </ng-container>
+  
+          <!-- Boolean Columns -->
+          <ng-container *ngFor="let column of columns; trackBy: trackByProperty">
+            <ng-container *ngIf="column.type === 'image'" [matColumnDef]="column.property">
+              <th *matHeaderCellDef class="uppercase" mat-header-cell mat-sort-header> {{ column.label }}</th>
+              <td *matCellDef="let row" [ngClass]="column.cssClasses" mat-cell align="center">
+                <ng-container>
+                  <mat-icon *ngIf="row[column.property] === true" svgIcon="mat:check"></mat-icon>
+                </ng-container>
+              </td>
+            </ng-container>
+          </ng-container>
+  
+          <!-- Action Column -->
+          <ng-container matColumnDef="actions">
+            <th *matHeaderCellDef mat-header-cell mat-sort-header>ACTION</th>
+            <td *matCellDef="let row" class="w-10 text-secondary" mat-cell>
+              <button *ngIf="access === userPermission.FullAccess" (click)="printDriverLog($event, row)" style="margin-left: -5px; margin-right: 5px;">
+                <mat-icon svgIcon="mat:print"></mat-icon>
+              </button>
+  
+              <button *ngIf="access === userPermission.FullAccess" (click)="deleteDriverLog($event, row)" style="margin-left: 5px;">
+                <mat-icon svgIcon="mat:delete"></mat-icon>
+              </button>
+            </td>
+          </ng-container>
+  
+          <tr *matHeaderRowDef="visibleColumns" mat-header-row></tr>
+          <tr (click)="updateDriverLog(row)" *matRowDef="let row; columns: visibleColumns;" @fadeInUp class="hover:bg-hover trans-ease-out cursor-pointer" 
+            [ngClass]="row.isActive === false ? 'inactiveRow' : ''" mat-row></tr>
+        </table>
+  
+        <mat-paginator style="height: 1px;" [pageSizeOptions]="pageSizeOptions" [pageSize]="pageSize"
+          class="sticky left-0"></mat-paginator>
+        <mat-paginator [pageSize]="pageSize" [pageIndex]="pageIndex" [pageSizeOptions]="pageSizeOptions"
+          class="sticky left-0" [length]="dataCount" [showFirstLastButtons]="true"
+          (page)="onPaginatorClicked($event)"></mat-paginator>
+      </div>
+  
+    </vex-page-layout-content>
+  
+  </vex-page-layout>
+  
+  <mat-menu #columnFilterMenu="matMenu" xPosition="before" yPosition="below">
+    <button (click)="toggleColumnVisibility(column, $event)" *ngFor="let column of columns"
+      class="checkbox-item mat-menu-item">
+      <mat-checkbox (click)="$event.stopPropagation()" [(ngModel)]="column.visible" color="primary">
+        {{ column.label }}
+      </mat-checkbox>
+    </button>
+  </mat-menu>
+  </div>
+  
+  <body *ngIf="data" id="section-print">
+    <style> #page { 
+      size: auto;
+      size: 4in 2.5in;
+      margin-left: 2mm;
+      margin-right: 2mm;
+      margin-top: 0mm;
+      margin-bottom: 0mm; }</style>
+    <div id="page">
+      <div id="page-container">
+        <div id="content-wrap">
+          <div>
+            <div class="flex-parent">
+              <div class="flex-child-left-title">
+                Drivers Log
+                &nbsp;&nbsp;&nbsp;Date:&nbsp;<span style="font-size: x-large; font-weight: bold;">{{data.date}}</span>
+                &nbsp;&nbsp;&nbsp;Time:&nbsp;<span style="font-size: x-large; font-weight: bold;">{{data.time}}</span>
+              </div>
+            </div>
+            <div class="flex-parent">
+              <div class="flex-child-left-title">
+                Drivers Name:&nbsp;<span style="font-size: x-large; font-weight: bold;">{{data.driverName}}</span>
+              </div>
+            </div>
+            <div class="flex-parent">
+              <div class="flex-child-left-title">
+                Drivers Log #:&nbsp;<span style="font-size: x-large; font-weight: bold;">{{data.driverLogNumber}}</span>
+              </div>
+            </div>
+            <div class="flex-parent">
+              <div class="flex-child-left-title">
+                STOPS:&nbsp;<span style="font-size: xx-large; font-weight: bold;">{{data.stops}}</span>
+              </div>
+            </div>
+            <br>
+            <br>
+            <div class="flex-parent">
+              <div class="flex-child-center-border">Order Number</div>
+              <div class="flex-child-center-border-big">Ship To</div>
+              <div class="flex-child-center-border-small">QTY</div>
+              <div class="flex-child-center-border-mid">Part Number</div>
+              <div class="flex-child-center-border">Terms</div>
+              <div class="flex-child-center-border">Total Amount</div>
+              <div class="flex-child-center-border-semi">Payment</div>
+            </div>
+            <div class="flex-parent" *ngFor="let lineItem of data.lineItems">
+              <div class="flex-child-center-border">{{lineItem.orderNumber}}</div>
+              <div class="flex-child-left-border-big">{{lineItem.shipTo}}</div>
+              <div class="flex-child-center-border-small">{{lineItem.quantity}}</div>
+              <div class="flex-child-center-border-mid">{{lineItem.partNumber}}</div>
+              <div class="flex-child-center-border">{{lineItem.terms}}</div>
+              
+              <div class="flex-child-right-border">{{lineItem.totalAmount}}</div>
+              <div class="flex-child-center-border-semi"></div>
+            </div>
+            <!-- <div class="flex-parent">
+              <div class="flex-child-left-title">Loc:&nbsp;<span style="font-size: large; font-weight: 500;">{{report.stockLocation}}</span></div>
+              <div class="flex-child-left-title">Qty:&nbsp;<span style="font-size: large; font-weight: 500;">{{report.stockQuantity}}</span></div>
+            </div>
+            <div class="flex-parent">
+              <div class="flex-child-left-title">Pick #:&nbsp;<span style="font-size: large; font-weight: 500;">{{report.pickNumber}}</span></div>
+            </div>
+            <div class="flex-parent">
+              <div class="flex-child-left-title">PLINK&nbsp;<span style="font-size: x-large; font-weight: 500;">{{report.partsLink}}</span></div>
+            </div>
+            <div class="flex-parent">
+              <div class="flex-child-left-title">ZONE&nbsp;<span style="font-size: xx-large; font-weight: 700;">{{report.zone}}</span></div>
+              <div class="flex-child-right">
+                <div class="flex-parent">
+                  <div class="flex-child-left-title" style="margin-left: -20px !important;"> {{report.deliveryType}} {{report.deliveryDate}} {{report.deliveryRoute}}</div>
+                </div>
+                <div class="flex-parent">
+                  <div class="flex-child-left-title"> {{report.orderNumber}}</div>
+                </div>
+              </div>
+            </div>
+            <div class="flex-parent">
+              <div class="flex-child-left">{{report.customerName}}</div>
+            </div> -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>

@@ -1,0 +1,149 @@
+.flex-parent {
+    display: flex;
+    width: 100%;
+    // border: 1px solid red;
+  }
+  
+  .flex-child-left {
+    flex: 1;
+    text-align: left;
+    font-size: large;
+    white-space: nowrap;
+  }
+
+  .flex-child-left-title {
+    flex: 1;
+    text-align: left;
+    font-size: small;
+    font-weight: bold;
+  }
+
+  .flex-child-left-small {
+    flex: 1;
+    text-align: left;
+    font-size: small;
+    white-space: nowrap;
+    // overflow: hidden;
+    // text-overflow: ellipsis;
+    // word-wrap: break-word;
+  }
+
+  .flex-child-left-xxsmall {
+    flex: 1;
+    text-align: left;
+    font-size: xx-small;
+  }
+
+  .flex-child-left-xlarge {
+    flex: 1;
+    text-align: left;
+    font-size: x-large;
+  }
+  
+  .flex-child-center {
+    flex: 1;
+    // border: 1px solid green;
+    //margin: 3px;
+    text-align: center;
+    //font-size: large;
+  }
+
+  .flex-child-center-small {
+    flex: 1;
+    // border: 1px solid green;
+    //margin: 3px;
+    text-align: center;
+    font-size: small;
+  }
+
+  .flex-child-center-medium {
+    flex: 1;
+    // border: 1px solid green;
+    //margin: 3px;
+    text-align: center;
+    font-size: medium;
+  }
+  
+  .flex-child-right {
+    flex: 1;
+    // border: 1px solid violet;
+    //margin: 3px;
+    text-align: right;
+    //font-size: large;
+  }
+  
+  //---------------------------------------------------------------------------------------------------------------------------------------
+  
+  #section-print {
+    display: none;
+  }
+  
+  #page {
+    size: auto;
+    size: 4in 2.5in;
+    margin-left: 2mm;
+    margin-right: 2mm;
+    margin-top: 0mm;
+    margin-bottom: 0mm;
+    page-break-after: always;
+  }
+  
+  /* print styles */
+  @media print {
+    #page-container {
+      position: relative;
+      min-height: 97vh;
+    //   border: 1px solid black;
+    }
+    
+    #content-wrap {
+      padding-bottom: 0rem;    /* Footer height */
+      // border: 1px solid aquamarine;
+    }
+    
+    #footer {
+      text-align: right;
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      height: 0rem;            /* Footer height */
+      // border: 1px solid gray;
+    }
+    
+    // #page {
+    //   size: 4in 2.5in;
+    //   margin-left: 2mm;
+    //   margin-right: 2mm;
+    //   margin-top: 0mm;
+    //   margin-bottom: 0mm;
+    //   page-break-after: always;
+    // }
+  
+    .flex-parent-gray {
+      display: flex;
+      width: 100%;
+    }
+  
+    @page {
+      size: auto;
+      size: 4in 2.5in;
+      margin-left: 2mm;
+      margin-right: 2mm;
+      margin-top: 0mm;
+      margin-bottom: 0mm;
+    }
+  
+    * {
+      overflow: visible !important;
+    }
+  
+    #section-print {
+      display: block;
+      left: 0;
+      top: 0;
+    }
+  
+    #section-table {
+      display: none;
+    }
+  }

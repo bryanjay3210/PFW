@@ -1,0 +1,86 @@
+<div class="w-full h-full bg-pattern flex flex-col items-center justify-center">
+  <div @fadeInUp class="card overflow-hidden w-full max-w-xl">
+    <div class="p-6 pb-0 flex flex-col items-center justify-center">
+      <div class="fill-current text-center">
+        <img class="h-16" src="assets/img/PFOS LOGO.jpg">
+      </div>
+    </div>
+
+    <div class="text-center mt-4">
+      <h2 class="title m-0">Register for an account</h2>
+      <h4 class="body-2 text-secondary m-0">Simply fill out the form below</h4>
+    </div>
+
+    <form [formGroup]="form" class="p-6 flex flex-col gap-4 flex-auto flex flex-col">
+      <!-- NJPR -->
+      <div>
+        <div class="flex items-center justify-between">
+          <!-- <mat-checkbox formControlName="accountNumber" (checked)="isCustomerUser" (change)="isCustomerUserChange($event)" class="caption" -->
+          <mat-checkbox formControlName="isCustomerUser" (change)="isCustomerUserChange($event)" class="caption"
+            color="primary">Customer User
+          </mat-checkbox>
+        </div>
+
+        <div *ngIf="isCustomerUser" class="flex flex-col sm:flex-row">
+          <mat-form-field class="mt-6 flex-auto">
+            <mat-label>Account Number</mat-label>
+            <input formControlName="accountNumber" matInput required (keydown.enter)="searchAccount($event)" (focusout)="searchAccount($event)">
+          </mat-form-field>
+
+          <mat-form-field class="sm:mt-6 sm:ml-6 flex-auto">
+            <mat-label>Location</mat-label>
+            <mat-select formControlName="locationId" aria-required="true">
+              <mat-option *ngFor="let l of locationListFiltered" [value]="l.id">{{ l.locationName }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div class="flex flex-col sm:flex-row">
+          <mat-form-field class="mt-6 flex-auto">
+            <mat-label>Name</mat-label>
+            <input formControlName="name" matInput required>
+          </mat-form-field>
+
+          <mat-form-field class="sm:mt-6 sm:ml-6 flex-auto">
+            <mat-label>E-Mail</mat-label>
+            <input formControlName="email" matInput required>
+          </mat-form-field>
+        </div>
+
+        <div class="flex flex-col sm:flex-row">
+          <mat-form-field class="mt-6 flex-auto">
+            <mat-label>Password</mat-label>
+            <input [type]="inputType" formControlName="password" matInput required>
+            <button (click)="toggleVisibility()" mat-icon-button matSuffix matTooltip="Toggle Visibility" type="button">
+              <mat-icon *ngIf="visible" svgIcon="mat:visibility"></mat-icon>
+              <mat-icon *ngIf="!visible" svgIcon="mat:visibility_off"></mat-icon>
+            </button>
+            <mat-hint>Click the eye to toggle visibility</mat-hint>
+          </mat-form-field>
+
+          <mat-form-field class="sm:mt-6 sm:ml-6 flex-auto">
+            <mat-label>Password (Confirm)</mat-label>
+            <input [type]="inputType" formControlName="passwordConfirm" matInput required>
+            <button (click)="toggleVisibility()" mat-icon-button matSuffix matTooltip="Toggle Visibility" type="button">
+              <mat-icon *ngIf="visible" svgIcon="mat:visibility"></mat-icon>
+              <mat-icon *ngIf="!visible" svgIcon="mat:visibility_off"></mat-icon>
+            </button>
+            <mat-hint>Please repeat your password from above</mat-hint>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-center">
+        <mat-checkbox (checked)="isAccept" (change)="isAcceptChange($event)" class="caption">I accept the <a>terms and
+            conditions.</a></mat-checkbox>
+      </div>
+      <button (click)="send()" color="primary" mat-raised-button type="button">
+        CREATE ACCOUNT
+      </button>
+      <p class="text-secondary text-center">
+        Already have an account?<br />
+        <a [routerLink]="['/login']">Sign in here</a>
+      </p>
+    </form>
+  </div>
+</div>

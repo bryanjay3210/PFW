@@ -1,0 +1,150 @@
+<div id="section-table">
+  <form [formGroup]="form">
+    <vex-page-layout>
+      <vex-page-layout-header class="pb-16 flex flex-col items-start justify-center">
+        <div [class.container]="layoutCtrl.value === 'boxed'" [class.px-gutter]="layoutCtrl.value === 'boxed'"
+          class="w-full flex flex-col sm:flex-row justify-between">
+          <div>
+            <h1 class="title mt-0 mb-1">Email Module</h1>
+            <vex-breadcrumbs [crumbs]="['Menu Tab Module', 'Administration',  'Email Module']"></vex-breadcrumbs>
+          </div>
+        </div>
+      </vex-page-layout-header>
+      <vex-page-layout-content [class.container]="layoutCtrl.value === 'boxed'"
+        [class.px-gutter]="layoutCtrl.value === 'boxed'" class="-mt-6">
+        <div class="card overflow-auto -mt-16">
+          <div class="bg-app-bar px-6 h-16 border-b sticky left-0 flex items-center">
+            <h2
+              class="title my-0 ltr:pr-4 rtl:pl-4 ltr:mr-4 rtl:ml-4 ltr:border-r rtl:border-l hidden sm:block flex-none">
+              <span>Email Module</span>
+            </h2>
+            <!-- <div class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+              <input [matDatepicker]="datepickerRef" [max]="todayDate" formControlName="statementDate" (dateChange)="onDateChange()"matInput required placeholder="Statement Date">
+                <mat-datepicker-toggle [for]="datepickerRef" class="block" matSuffix></mat-datepicker-toggle>
+                <mat-datepicker #datepickerRef></mat-datepicker>
+            </div>
+            <div class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+              <input [matDatepicker]="datepickerRef2" [min]="form.get('statementDate').value" formControlName="paymentDueDate" matInput required placeholder="Payment Due Date">
+                <mat-datepicker-toggle [for]="datepickerRef2" class="block" matSuffix></mat-datepicker-toggle>
+                <mat-datepicker #datepickerRef2></mat-datepicker>
+            </div> -->
+            <span class="flex-1"></span>
+            <!-- <div class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+              <mat-icon class="icon-sm text-secondary" svgIcon="mat:location_on"></mat-icon>
+              <mat-select [formControl]="stateCtrl" aria-required="true" class="px-4 py-2 border-0 outline-none w-full bg-transparent"
+                placeholder="State">
+                <mat-option *ngFor="let e of stateList" [value]="e.id">{{ e.name }} </mat-option>
+              </mat-select>
+            </div>
+            <div class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+              <mat-icon class="icon-sm text-secondary" svgIcon="mat:payment"></mat-icon>
+              <mat-select [formControl]="paymentTermCtrl" aria-required="true" class="px-4 py-2 border-0 outline-none w-full bg-transparent"
+                placeholder="Payment Term">
+                <mat-option *ngFor="let e of paymentTermList" [value]="e.id">{{ e.termName }} </mat-option>
+              </mat-select>
+            </div> -->
+            <div
+              class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+              <mat-icon class="icon-sm text-secondary" svgIcon="mat:search"></mat-icon>
+              <input #product [formControl]="customerFilterCtrl"
+                class="px-4 py-2 border-0 outline-none w-full bg-transparent" placeholder="Name/Account/Phone Number"
+                type="search" (keyup.enter)="openCustomerList()">
+            </div>
+            <button *ngIf="access === userPermission.FullAccess" (click)="openCustomerList()" class="ml-4 flex-none"
+              color="primary" mat-mini-fab matTooltip="Select Customer" type="button">
+              <mat-icon svgIcon="mat:add"></mat-icon>
+            </button>
+          </div>
+
+          <mat-form-field appearance="outline" class="block w-full">
+            <mat-label>To</mat-label>
+            <input cdkFocusInitial matInput type="text" />
+            <button (click)="toggleDropdown()" class="-top-2" color="primary" mat-button matSuffix
+              type="button">CC/BCC</button>
+          </mat-form-field>
+          <br>
+          <div [@dropdown]="dropdownOpen" class="overflow-hidden">
+            <mat-form-field appearance="outline" class="block w-full">
+              <mat-label>Cc</mat-label>
+              <input matInput type="text" />
+            </mat-form-field>
+            <br>
+            <mat-form-field appearance="outline" class="block w-full">
+              <mat-label>Bcc</mat-label>
+              <input matInput type="text" />
+            </mat-form-field>
+            <br>
+          </div>
+
+          <mat-form-field appearance="outline" class="block w-full">
+            <mat-label>Subject</mat-label>
+            <input matInput type="text" />
+          </mat-form-field>
+          <br>
+          <div class="vex-mail-compose-editor flex flex-col">
+            <quill-editor [styles]="{ flex: '1 1 auto', display: 'flex', 'flex-direction': 'column' }" class="flex-auto flex flex-col"></quill-editor>
+            <quill-view [content]="content" format="text" theme="snow"></quill-view>
+            <quill-view-html [content]="htmlString" theme="snow"></quill-view-html>
+          </div>
+
+          <!-- <div class="vex-mail-compose-editor flex flex-col">
+            <quill-editor [styles]="{ flex: '1 1 auto', display: 'flex', 'flex-direction': 'column' }"
+              class="flex-auto flex flex-col"></quill-editor>
+          </div> -->
+
+          <div
+            class="vex-mail-compose-attachment mt-4 mb-2 rounded-full border px-4 py-1 flex items-center hover:bg-hover transition duration-200 ease-in-out cursor-pointer relative"
+            matRipple>
+            <mat-icon class="flex-none text-primary icon-sm" svgIcon="mat:picture_as_pdf"></mat-icon>
+            <p class="flex-auto ml-4 text-sm">super-secret-design-document.pdf</p>
+            <p class="text-sm text-secondary mr-2 flex-none">54kb</p>
+            <button (click)="$event?.stopPropagation()" class="flex-none w-8 h-8 leading-none" mat-icon-button
+              type="button">
+              <mat-icon class="icon-sm" svgIcon="mat:close"></mat-icon>
+            </button>
+          </div>
+
+          <div
+            class="vex-mail-compose-attachment my-2 rounded-full border px-4 py-1 flex items-center hover:bg-hover transition duration-200 ease-in-out cursor-pointer relative"
+            matRipple>
+            <mat-icon class="flex-none text-primary icon-sm" svgIcon="mat:image"></mat-icon>
+            <p class="flex-auto ml-4 text-sm">cute-cat-picture.jpg</p>
+
+            <p class="text-sm text-secondary mr-2 flex-none">16kb</p>
+            <button (click)="$event?.stopPropagation()" class="flex-none w-8 h-8 leading-none" mat-icon-button
+              type="button">
+              <mat-icon class="icon-sm" svgIcon="mat:close"></mat-icon>
+            </button>
+          </div>
+
+        </div>
+      </vex-page-layout-content>
+    </vex-page-layout>
+  </form>
+  <!-- <div class="flex items-center" mat-dialog-title>
+    <p class="flex-auto text-lg font-medium">New Message</p>
+    <button mat-dialog-close mat-icon-button type="button">
+      <mat-icon svgIcon="mat:close"></mat-icon>
+    </button>
+  </div>
+  <mat-dialog-content>
+  </mat-dialog-content>
+   -->
+  <span style="float: right; padding-right: 50px;">
+    <button *ngIf="access === userPermission.FullAccess" mat-flat-button (click)="clear()"
+      style="margin: 5px;">Clear</button>
+    <button *ngIf="access === userPermission.FullAccess" color="primary" mat-flat-button (click)="print()"
+      style="margin: 5px;">Send</button>
+    <button *ngIf="access === userPermission.FullAccess && selectedCustomerList && this.selectedCustomerList.length > 0"
+      color="primary" mat-flat-button (click)="email()" style="margin: 5px;">Email</button>
+    <!-- <button [disabled]="dataSource.data === undefined || dataSource.data.length === 0" color="primary" mat-flat-button (click)="print()" style="margin: 5px;">Print</button> -->
+  </span>
+  <mat-menu #columnFilterMenu="matMenu" xPosition="before" yPosition="below">
+    <button (click)="toggleColumnVisibility(column, $event)" *ngFor="let column of columns"
+      class="checkbox-item mat-menu-item">
+      <mat-checkbox (click)="$event.stopPropagation()" [(ngModel)]="column.visible" color="primary">
+        {{ column.label }}
+      </mat-checkbox>
+    </button>
+  </mat-menu>
+</div>

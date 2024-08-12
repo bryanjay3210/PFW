@@ -1,0 +1,550 @@
+<form *ngIf="form" [formGroup]="form" (keydown.enter)="$event.preventDefault()">
+  <div class="flex items-center" mat-dialog-title>
+    <img [src]="imageDefault" class="avatar-sq mr-5">
+    <h2 *ngIf="(defaults.isQuote === undefined || defaults.isQuote === false) && isCreateMode()"
+      class="headline m-0 flex-auto">New Order</h2>
+    <h2 *ngIf="(defaults.isQuote === undefined || defaults.isQuote === false) && !isCreateMode()" class="headline m-0 flex-auto">
+      Order Number: {{ defaults.orderNumber }} | Invoice Number: {{ defaults.invoiceNumber }} | 
+      <span style="font-size: large;">Order Date: {{ formatDate(defaults.orderDate) }} | Created By: {{ defaults.createdBy}} | Modified By: {{ defaults.modifiedBy}}</span>
+    </h2>
+    <h2 *ngIf="defaults.isQuote === true" class="headline m-0 flex-auto">
+      Quote Number: {{ defaults.quoteNumber }} | 
+      <span style="font-size: large;">Quote Date: {{ formatDate(defaults.createdDate) }} | Created By: {{ defaults.createdBy}} | Modified By: {{ defaults.modifiedBy}}</span>
+    </h2>
+    <button class="text-secondary" mat-icon-button type="button" (click)="cancel()">
+      <mat-icon svgIcon="mat:close"></mat-icon>
+    </button>
+  </div>
+  <mat-divider class="-mx-6 text-border"></mat-divider>
+  <div>
+    <div class="flex flex-col sm:flex-row gap-4">
+      <div @fadeInUp class="card flex-auto" style="width: 350px;">
+        <div class="px-4 py-2 flex flex-col">
+          <div class="flex flex-col sm:flex-row">
+            <div style="width: 100px;"><h1><b>Customer</b></h1></div>
+            <mat-form-field class="sm:mt-6 sm:ml-6 flex-auto"  style="width:200px;">
+              <mat-label>Customer/Business</mat-label>
+              <input formControlName="customerName" class="overflow-ellipsis-200" matTooltip="{{ form.get('customerName').value }}" matInput required readonly>
+            </mat-form-field>
+          </div>
+        </div>
+        <div class="px-4 py-2 flex flex-col" style="margin-top: -15px;">
+          <div class="flex flex-col sm:flex-row">
+            <div style="width: 100px;"><h1><b>Information</b></h1></div>
+            <mat-form-field style="width: 100px;">
+              <mat-label>Account Number</mat-label>
+              <input cdkFocusInitial formControlName="accountNumber" matInput required readonly>
+            </mat-form-field>
+            <mat-form-field style="width: 100px;">
+              <mat-label>Payment Term</mat-label>
+              <mat-select [panelClass]="'hidden'" formControlName="paymentTermId" aria-required="true">
+                <mat-option *ngFor="let e of paymentTermList" [value]="e.id">{{ e.termName }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+      </div>
+      <div @fadeInUp class="card overflow-hidden flex-auto">
+        <div class="px-4 py-2 flex flex-col">
+          <div class="flex flex-col sm:flex-row">
+            <h1 style="width: 75px !important;"><b>Billing</b></h1>
+            <mat-form-field style="width: 350px !important;">
+              <mat-label>Address</mat-label>
+              <input formControlName="billAddress" matInput readonly>
+            </mat-form-field>
+            <mat-form-field style="width: 100px !important;">
+              <mat-label>City</mat-label>
+              <input formControlName="billCity" matInput readonly>
+            </mat-form-field>
+            <mat-form-field style="width: 50px !important;">
+              <mat-label>State</mat-label>
+              <input formControlName="billState" matInput readonly>
+            </mat-form-field>
+            <mat-form-field style="width: 50px !important;">
+              <mat-label>Zip Code</mat-label>
+              <input formControlName="billZipCode" matInput readonly>
+            </mat-form-field>
+            <mat-form-field style="width: 50px !important;">
+              <mat-label>Zone</mat-label>
+              <input formControlName="billZone" matInput readonly>
+            </mat-form-field>
+            <mat-form-field style="width: 100px !important;">
+              <mat-label>Phone Number</mat-label>
+              <input formControlName="billPhoneNumber" matInput readonly>
+            </mat-form-field>
+            <mat-form-field style="width: 100px !important;">
+              <mat-label>Contact Name</mat-label>
+              <input formControlName="billContactName" matInput readonly>
+            </mat-form-field>
+          </div>
+          <div class="flex flex-col sm:flex-row">
+            <h1 style="width: 75px !important;"><b>Shipping</b></h1>
+            <mat-form-field style="width: 180px;">
+              <mat-label>Customer/Business</mat-label>
+              <input formControlName="shipAddressName" class="overflow-ellipsis-200" matTooltip="{{ form.get('shipAddressName').value }}" matInput required>
+            </mat-form-field>
+            <mat-form-field style="width: 200px !important;">
+              <mat-label>Address</mat-label>
+              <input formControlName="shipAddress" matInput required>
+            </mat-form-field>
+            <mat-form-field style="width: 100px !important;">
+              <mat-label>City</mat-label>
+              <input formControlName="shipCity" matInput required>
+            </mat-form-field>
+            <mat-form-field style="width: 50px !important;">
+              <mat-label>State</mat-label>
+              <input formControlName="shipState" matInput required>
+            </mat-form-field>
+            <mat-form-field style="width: 50px !important;">
+              <mat-label>Zip Code</mat-label>
+              <input formControlName="shipZipCode" matInput required (change)="getZoneValue($event)">
+            </mat-form-field>
+            <mat-form-field style="width: 50px !important;">
+              <mat-label>Zone</mat-label>
+              <input formControlName="shipZone" matInput required readonly>
+            </mat-form-field>
+            <mat-form-field style="width: 100px !important;">
+              <mat-label>Phone Number</mat-label>
+              <input formControlName="shipPhoneNumber" matInput required>
+            </mat-form-field>
+            <mat-form-field style="width: 100px !important;">
+              <mat-label>Contact Name</mat-label>
+              <input formControlName="shipContactName" matInput required>
+            </mat-form-field>
+            <span style="float: right;">
+              <button *ngIf="access === userPermission.FullAccess" (click)="openLocationList('Shipping')"
+                class="ml-4 flex-none" color="primary" mat-mini-fab matTooltip="Select Customer Location"
+                type="button" [disabled]="currentCustomer.id === undefined">
+                <mat-icon svgIcon="mat:add"></mat-icon>
+              </button>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="flex flex-col sm:flex-row" hidden="showfilters()">
+      <table style="width: 100%;">
+        <tr style="width: 100%;">
+          <td style="width: 20%;"><h1><b>ENTER PART REFERENCE NUMBER</b></h1></td>
+          <td style="width: 80%;">
+            <tr>
+              <td>
+                <mat-form-field  style="width: 250px;" *ngIf="currentCustomer.id !== undefined" class="sm:mt-6 sm:ml-6">
+                  <mat-label>Part Number/Reference Number</mat-label>
+                  <input formControlName="partNumberFilter" matInput (keydown.enter)="openProductListByPartNumber()">
+                </mat-form-field>
+              </td>
+
+              <td style="width: auto;">
+                <button *ngIf="currentCustomer.id !== undefined" (click)="openProductListByPartNumber()"
+                class="ml-4 flex-none" color="primary" mat-mini-fab matTooltip="Search Products by Part Number"
+                type="button">
+                <mat-icon svgIcon="mat:search"></mat-icon>
+              </button>
+              </td>
+            </tr>
+          </td>
+        </tr>
+        <tr style="width: 100%;">
+          <td style="width: 20%;"><h1><b>SELECT YOUR VEHICLE </b></h1></td>
+          <td style="width: 80%;">
+            <tr>
+              <td style="width: 200px;">
+                <mat-form-field *ngIf="filteredYears$ && currentCustomer.id !== undefined" class="sm:mt-6 sm:ml-6 flex-auto" style="width: 200px;">
+                  <mat-label>Year</mat-label>
+                  <input #inputYear  #inputYr="matAutocompleteTrigger"
+                    matInput 
+                    [formControl]="yearCtrl" 
+                    [matAutocomplete]="autoYear" 
+                    (keydown.enter)="inputYr.closePanel(); onYearEnter($event.target)">
+                  <mat-autocomplete #autoYear="matAutocomplete" (optionSelected)="onYearSelectionChange($event.option.value)">
+                    <mat-option *ngFor="let year of filteredYears$ | async" [value]="year.year">
+                      <span class="body-1">{{ year.year }} </span>
+                    </mat-option>
+                  </mat-autocomplete>
+                  <button (click)="resetYearControl()" *ngIf="yearCtrl.value" mat-icon-button matSuffix type="button">
+                    <mat-icon svgIcon="mat:close"></mat-icon>
+                  </button>
+                  <button *ngIf="!yearCtrl.value" mat-icon-button matSuffix type="button">
+                    <mat-icon svgIcon="mat:arrow_drop_down"></mat-icon>
+                  </button>
+                </mat-form-field>
+              </td>
+              <td style="width: 200px;">
+                <mat-form-field *ngIf="filteredMakes$ && currentCustomer.id !== undefined" class="sm:mt-6 sm:ml-6 flex-auto" style="width: 200px;">
+                  <mat-label>Make</mat-label>
+                  <input #inputMake #inputMk="matAutocompleteTrigger" 
+                    matInput
+                    [formControl]="makeCtrl" 
+                    [matAutocomplete]="autoMake" 
+                    (keydown.enter)="inputMk.closePanel(); onMakeEnter($event.target)">
+                  <mat-autocomplete #autoMake="matAutocomplete" (optionSelected)="onMakeSelectionChange($event.option.value)">
+                    <mat-option *ngFor="let make of filteredMakes$ | async" [value]="make.make">
+                      <span class="body-1">{{ make.make }} </span>
+                    </mat-option>
+                  </mat-autocomplete>
+                  <button (click)="resetMakeControl()" *ngIf="makeCtrl.value" mat-icon-button matSuffix type="button">
+                    <mat-icon svgIcon="mat:close"></mat-icon>
+                  </button>
+                  <button *ngIf="!makeCtrl.value" mat-icon-button matSuffix type="button">
+                    <mat-icon svgIcon="mat:arrow_drop_down"></mat-icon>
+                  </button>
+                </mat-form-field>
+              </td>
+              <td style="width: 200px;">
+                <mat-form-field *ngIf="filteredModels$ && currentCustomer.id !== undefined" class="sm:mt-6 sm:ml-6 flex-auto" style="width: 200px;">
+                  <mat-label>Model</mat-label>
+                  <input #inputModel #inputMd="matAutocompleteTrigger" 
+                    matInput
+                    [formControl]="modelCtrl" 
+                    [matAutocomplete]="autoModel" 
+                    (keydown.enter)="inputMd.closePanel(); onModelEnter($event.target)">
+                  <mat-autocomplete #autoModel="matAutocomplete" (optionSelected)="onModelSelectionChange($event.option.value)">
+                    <mat-option *ngFor="let model of filteredModels$ | async" [value]="model.model">
+                      <span class="body-1">{{ model.model }} </span>
+                    </mat-option>
+                  </mat-autocomplete>
+                  <button (click)="resetModelControl()" *ngIf="modelCtrl.value" mat-icon-button matSuffix type="button">
+                    <mat-icon svgIcon="mat:close"></mat-icon>
+                  </button>
+                  <button *ngIf="!modelCtrl.value" mat-icon-button matSuffix type="button">
+                    <mat-icon svgIcon="mat:arrow_drop_down"></mat-icon>
+                  </button>
+                </mat-form-field>
+              </td>
+              <td style="width: 200px;">
+                <div *ngIf="filteredCategories$ && currentCustomer.id !== undefined" class="sm:mt-6 sm:ml-6 flex-auto" style="margin-top: -5px;">
+                  <ng-multiselect-dropdown #multiCategory formControlName="categoryControl" [placeholder]="'Category'"
+                    style="width: 400px;" [settings]="dropdownCategorySettings" [data]="categoryList"
+                    [(ngModel)]="selectedCategoryItems" (onSelect)="onCategoryItemSelect($event)"
+                    (onDeSelect)="onCategoryItemDeSelect($event)" (onSelectAll)="onCategorySelectDeSelectAll()"
+                    (onDeSelectAll)="onCategorySelectDeSelectAll()"
+                    (keyup.enter)="onCategoryEnter($event.target)">
+                  </ng-multiselect-dropdown>
+                </div>
+              </td>
+              <td style="width: 200px;">
+                <div *ngIf="filteredSequences$ && currentCustomer.id !== undefined" class="sm:mt-6 sm:ml-6 flex-auto" style="margin-top: -5px;">
+                  <ng-multiselect-dropdown #multiSequence formControlName="sequenceControl" [placeholder]="'Part Name'"
+                    style="width: 400px;" [settings]="dropdownSequenceSettings" [data]="sequenceList"
+                    [(ngModel)]="selectedSequenceItems" (onSelect)="onSequenceItemSelect($event)"
+                    (onDeSelect)="onSequenceItemDeSelect($event)" (onSelectAll)="onSequenceSelectDeSelectAll()"
+                    (onDeSelectAll)="onSequenceSelectDeSelectAll()"
+                    (keyup.enter)="onSequenceEnter($event.target)">
+                  </ng-multiselect-dropdown>
+                </div>
+              </td>
+              <td style="width: auto;">
+                <button *ngIf="currentCustomer.id !== undefined" (click)="openProductListByYearMakeModel()" style="margin-bottom: 10px;"
+                  class="ml-4 flex-none" color="primary" mat-mini-fab matTooltip="Search Products by Year, Make, Model, Category, and Sequence" type="button">
+                  <mat-icon svgIcon="mat:search"></mat-icon>
+                </button>
+              </td>
+            </tr>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <mat-divider class="-mx-6 text-border"></mat-divider>
+  </div>
+  <mat-divider class="-mx-6 text-border"></mat-divider>
+  <mat-dialog-content class="flex flex-col" style="height: 300px !important;">
+    <!--TABLE------------------------------------------------------------------------------------------------------------------------------------------------------->
+    <table @stagger [dataSource]="dataSource" class="w-full" mat-table matSort>
+      <!-- Image Column -->
+      <ng-container matColumnDef="imageUrl">
+        <th *matHeaderCellDef mat-header-cell></th>
+        <td *matCellDef="let row" class="tooltip-img w-16 min-w-16 pr-0" mat-cell>
+          <img [src]="row['imageUrl']" class="avatar h-16 w-16">
+          <table class="tooltiptext-img" style="min-width: 1000px important;">
+            <!-- <th class="overflow-ellipsis-wide h-4" title="{{ row.partNumber }} - {{ row.partDescription }}"> -->
+              <th title="{{ row.partNumber }} - {{ row.partDescription }}">
+              <span>{{ row.partNumber }} - {{ row.partDescription }}</span>
+            </th>
+            <tr>
+              <td><img [src]="row['imageUrl']" class="align-middle"></td>
+            </tr>
+          </table>
+        </td>
+      </ng-container>
+
+      <!-- Quantity Column -->
+      <ng-container matColumnDef="orderQuantity" style="width: 50px; margin-left: -10px;">
+        <th *matHeaderCellDef mat-header-cell mat-sort-header style="width: 50px; margin-left: -10px;">QTY</th>
+        <td *matCellDef="let row" mat-cell>
+          <div class="flex items-center gap-1">
+            <input class="span-column" type="number" min="1" style="width: 50px; margin-left: -10px;"
+              [value]="row.orderQuantity" (change)="handleQuantityOnChangeEvent(row, $event)"
+              onkeydown="return event.key != 'Enter';"
+              [disabled]="row.statusId === 1 || row.statusId === 2">
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- Stocks Column -->
+      <ng-container matColumnDef="stocks" style="width: 50px; margin-left: -10px;">
+        <th *matHeaderCellDef mat-header-cell mat-sort-header style="width: 50px; margin-left: -10px;">STOCKS</th>
+        <td *matCellDef="let row" mat-cell>{{ getStockAvailability(row)}}</td>
+      </ng-container>
+
+      <!-- List Price Column -->
+      <ng-container matColumnDef="listPrice" style="width: 50px;">
+        <th *matHeaderCellDef mat-header-cell mat-sort-header style="width: 50px;">LIST PRICE</th>
+        <td *matCellDef="let row" mat-cell>
+          <div align="right" class="currency-wrap">
+            <span class="currency-code">${{ formatCurrency(row.listPrice) }}</span>
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- Wholesale Price Column -->
+      <ng-container matColumnDef="wholesalePrice" style="width: 50px;">
+        <th *matHeaderCellDef mat-header-cell mat-sort-header style="width: 50px;">PRICE</th>
+        <td *matCellDef="let row" mat-cell class="tooltip">
+          <div align="right" class="currency-wrap">
+            <span class="currency-code">${{ formatCurrency(row.wholesalePrice) }}</span>
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- Year Column -->
+      <ng-container matColumnDef="yearFrom">
+        <th *matHeaderCellDef mat-header-cell mat-sort-header>YEAR</th>
+        <td *matCellDef="let row" mat-cell>
+          <div class="flex items-center gap-1">
+            <span class="span-column">{{ row.yearFrom }}<br>{{ row.yearTo }}</span>
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- Text Columns -->
+      <div *ngFor="let column of columns" style="width: 50px;">
+        <ng-container *ngIf="column.type === 'text' && column.property === 'partsLinks'"
+          [matColumnDef]="column.property">
+          <th *matHeaderCellDef mat-header-cell mat-sort-header style="width: 50px;"> PARTS LINKS & OEM</th>
+          <td *matCellDef="let row" mat-cell>
+            <div class="flex items-center gap-1">
+              <span class="span-column overflow-ellipsis-wide" title="{{ row.partsLinks }} {{ row.oeMs }}">{{
+                row.partsLinks }}<br>{{ row.oeMs }}</span>
+            </div>
+          </td>
+        </ng-container>
+
+        <ng-container *ngIf="column.type === 'text' && (column.property !== 'stocks' && column.property !== 'partDescription' && column.property !== 'partsLinks' && column.property !== 'partNumber')"
+          [matColumnDef]="column.property" style="width: 50px;">
+          <th *matHeaderCellDef mat-header-cell mat-sort-header style="width: 50px;"> {{ column.label }}</th>
+          <td *matCellDef="let row" class="overflow-ellipsis" title="{{ row[column.property] }}" mat-cell
+            style="width: 50px;">{{ row[column.property] }}</td>
+        </ng-container>
+
+        <ng-container *ngIf="column.type === 'text' && column.property === 'partDescription'"
+          [matColumnDef]="column.property">
+          <th *matHeaderCellDef mat-header-cell mat-sort-header> {{ column.label }}</th>
+          <td *matCellDef="let row" class="overflow-wrap" title="{{ row[column.property] }}" mat-cell>{{
+            row[column.property] }}</td>
+        </ng-container>
+
+        <!-- Part Number & Warehouse Tracking -->
+        <ng-container *ngIf="column.type === 'text' && column.property === 'partNumber'" [matColumnDef]="column.property">
+          <th *matHeaderCellDef mat-header-cell mat-sort-header style="width: 150px;"> {{ column.label }}</th>
+          <td *matCellDef="let row" class="tooltiptrackingNAMO" mat-cell style="width: 150px;">
+            <div class="flex items-center gap-1">
+              <span class="span-left">{{ row.partNumber }}<br>{{ row.warehouseTracking !== undefined ? row.warehouseTracking : '' }}</span><br><br>
+              <!-- <table class="tooltiptrackingtextNAMO" *ngIf="row.warehouseTrackings && row.warehouseTrackings.length > 0">
+                <th>Status</th>&nbsp;&nbsp;<th>Date</th>&nbsp;&nbsp;<th>User</th>
+                <tr *ngFor="let tracking of row.warehouseTrackings">
+                  <td align="left">{{ tracking.status }}</td>&nbsp;&nbsp;
+                  <td>{{ formatDate(tracking.createdDate) }}</td>&nbsp;&nbsp;
+                  <td>{{ tracking.createdBy }}</td>
+                </tr>
+              </table> -->
+            </div>
+          </td>
+        </ng-container>
+        <ng-container *ngIf="column.type === 'number' && (column.property === 'discountedPrice' || column.property === 'totalAmount')"
+          [matColumnDef]="column.property" style="width: 50px;">
+          <th *matHeaderCellDef mat-header-cell mat-sort-header style="width: 50px;"> {{ column.label }}</th>
+          <td *matCellDef="let row" mat-cell style="width: 70px;">
+            <div class="flex items-center gap-1">
+              <span class="span-column">${{formatCurrency(row[column.property])}}</span>
+            </div>
+          </td>
+        </ng-container>
+      </div>
+
+      <!-- Action Column -->
+      <ng-container matColumnDef="actions" style="width: 25px;">
+        <th *matHeaderCellDef mat-header-cell mat-sort-header style="width: 25px;">ACTION</th>
+        <div *ngIf="(defaults.isQuote === undefined || defaults.isQuote === false) && isCreateMode(); else isUpdateMode">
+          <td *matCellDef="let row" class="w-10 text-secondary" mat-cell style="width: 25px;" align="center">
+            <button *ngIf="access === userPermission.FullAccess" (click)="deleteOrderDetail(row)">
+              <mat-icon svgIcon="mat:delete" matTooltip="Delete Order Detail"></mat-icon>
+            </button>
+          </td>
+        </div>
+        <ng-template #isUpdateMode>
+          <!-- <th *matHeaderCellDef mat-header-cell mat-sort-header style="width: 25px;">STATUS</th> -->
+          <td *matCellDef="let row" class="w-10 text-secondary" mat-cell style="width: 25px;" align="center">
+            <button *ngIf="access === userPermission.FullAccess" (click)="deleteQuoteDetail(row)">
+              <mat-icon svgIcon="mat:delete" matTooltip="Delete Order Detail"></mat-icon>
+            </button>
+            <!-- <div *ngIf="!isQuote">
+              <button *ngIf="access === userPermission.FullAccess" (click)="flagOrderDetail(row)">
+                <mat-icon svgIcon="mat:flag" [ngStyle]="{'color': row.statusId === 1 ? 'purple' : row.statusId === 2 ? 'red' : row.statusId === 3 ? 'green' : ''}"
+                [matTooltip] = "row.statusId === 1 ? 'Customer Cancelled' : row.statusId === 2 ? 'Out Of Stock' : row.statusId === 3 ? 'Back Ordered' : 'Flag Order Detail'"></mat-icon>
+              </button>
+            </div>
+            <div *ngIf="isQuote">
+              
+            </div> -->
+          </td>
+        </ng-template>
+      </ng-container>
+      <tr *matHeaderRowDef="visibleColumns" mat-header-row></tr>
+      <tr *matRowDef="let row; columns: visibleColumns;" @fadeInUp class="hover:bg-hover trans-ease-out cursor-pointer"
+        [ngClass]="row.statusId === 1 || row.statusId === 2 || row.statusId === 3 ? 'inactiveRow' : row.statusId === 5 ? 'creditMemoRow' : ''" mat-row></tr>
+    </table>
+    <!--TABLE------------------------------------------------------------------------------------------------------------------------------------------------------->
+  </mat-dialog-content>
+</form>
+
+<mat-divider class="-mx-6 text-border"></mat-divider>
+<mat-divider class="-mx-6 text-border"></mat-divider>
+
+<form *ngIf="form" [formGroup]="form">
+  <div class="px-4 py-2 flex flex-col" style="margin-top: 0px;">
+    <table style="width: 100%;">
+      <tr>
+        <td>
+          <div class="flex flex-col sm:flex-row sm:gap-4">
+            <mat-form-field class="mt-6 flex-auto">
+              <mat-label>Purchase Order Number</mat-label>
+              <input cdkFocusInitial formControlName="purchaseOrderNumber" matInput>
+            </mat-form-field>
+          </div>
+        </td>
+        <td align="right">
+          <mat-form-field class="mt-6 flex-auto">
+            <mat-label>Sub Total</mat-label>
+            <input cdkFocusInitial formControlName="summarySubTotal" type="number" matInput readonly
+              style="text-align: right;">
+          </mat-form-field>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <div class="flex flex-col sm:flex-row sm:gap-4">
+            <button *ngIf="access === userPermission.FullAccess" style="margin-top: 5px;" (click)="addNewContact()"
+              color="primary" mat-mini-fab matTooltip="Add New Contact" type="button"
+              [disabled]="currentCustomer.id === undefined">
+              <mat-icon svgIcon="mat:add"></mat-icon>
+            </button>
+            <mat-radio-group class="radio-group" formControlName="orderedBy" [(ngModel)]="selectedContact"
+              style="margin-top: 10px !important;">
+              <mat-radio-button class="radio-button" *ngFor="let contact of currentCustomer.contacts"
+                style="margin-right: 10px;" [value]="contact.contactName" (change)="radioButtonChange(contact)">
+                {{ contact.contactName }}
+              </mat-radio-button><br>
+            </mat-radio-group>
+            <mat-form-field class="mt-6 flex-auto">
+              <mat-label>Email</mat-label>
+              <input cdkFocusInitial formControlName="orderedByEmail" matInput readonly>
+            </mat-form-field>
+            <mat-form-field class="mt-6 flex-auto">
+              <mat-label>Phone</mat-label>
+              <input cdkFocusInitial formControlName="orderedByPhoneNumber" matInput readonly>
+            </mat-form-field>
+          </div>
+        </td>
+        <td *ngIf="this.form.value.summaryDiscount > 0" align="right">
+          <mat-form-field class="mt-6 flex-auto">
+            <mat-label>Discount (%)</mat-label>
+            <input cdkFocusInitial formControlName="summaryDiscount" type="number" min="0"
+              (change)="handleSummaryOnChangeEvent()" matInput style="text-align: right;" readonly>
+          </mat-form-field>
+          <mat-form-field class="mt-6 flex-auto">
+            <mat-label>Discount Amount</mat-label>
+            <input cdkFocusInitial formControlName="summaryDiscountAmount" type="number" matInput readonly
+              style="text-align: right;">
+          </mat-form-field>
+        </td>
+        <td  *ngIf="this.form.value.summaryDiscount === 0" align="right">
+          <mat-form-field class="mt-6 flex-auto">
+            <mat-label>Tax Rate</mat-label>
+            <input cdkFocusInitial formControlName="summaryTaxRate" type="number"
+              (change)="handleSummaryOnChangeEvent()" matInput style="text-align: right;" readonly>
+          </mat-form-field>
+          <mat-form-field class="mt-6 flex-auto">
+            <mat-label>Tax Amount</mat-label>
+            <input cdkFocusInitial formControlName="summaryTax" type="number" matInput readonly
+              style="text-align: right;">
+          </mat-form-field>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <div class="flex flex-col sm:flex-row sm:gap-4">
+            <mat-form-field class="mt-6 flex-auto">
+              <mat-label>Special Notes</mat-label>
+              <input cdkFocusInitial formControlName="orderedByNotes" matInput>
+            </mat-form-field>
+          </div>
+        </td>
+        <td *ngIf="this.form.value.summaryDiscount > 0" align="right">
+          <mat-form-field class="mt-6 flex-auto">
+            <mat-label>Tax Rate</mat-label>
+            <input cdkFocusInitial formControlName="summaryTaxRate" type="number"
+              (change)="handleSummaryOnChangeEvent()" matInput style="text-align: right;" readonly>
+          </mat-form-field>
+          <mat-form-field class="mt-6 flex-auto">
+            <mat-label>Tax Amount</mat-label>
+            <input cdkFocusInitial formControlName="summaryTax" type="number" matInput readonly
+              style="text-align: right;">
+          </mat-form-field>
+        </td>
+        <td *ngIf="this.form.value.summaryDiscount === 0" align="right">
+          <mat-form-field class="mt-6 flex-auto">
+            <mat-label>Total</mat-label>
+            <input cdkFocusInitial formControlName="summaryTotal" type="number" matInput readonly
+              style="text-align: right;">
+          </mat-form-field>
+        </td>
+      </tr>
+      <tr>
+        <td>
+        </td>
+        <td *ngIf="this.form.value.summaryDiscount > 0" align="right">
+          <mat-form-field class="mt-6 flex-auto">
+            <mat-label>Total</mat-label>
+            <input cdkFocusInitial formControlName="summaryTotal" type="number" matInput readonly
+              style="text-align: right;">
+          </mat-form-field>
+        </td>
+      </tr>
+      <div *ngIf="defaults.orderStatusId === 2">
+        <tr *ngFor="let e of paymentHistoryList">{{ displayPaymentHistory(e) }} </tr>
+      </div>
+      <div *ngIf="defaults.orderStatusId === 5">
+        <tr>{{ displayCreditMemoHistory() }} </tr>
+      </div>
+      <div *ngIf="defaults.orderStatusId === 7">
+        <tr>{{ displayOverpaymentOrigin() }} </tr>
+        <tr>{{ displayOverpaymentHistory() }} </tr>
+      </div>
+    </table>
+  </div>
+</form>
+
+<mat-dialog-actions *ngIf="access === userPermission.FullAccess" align="end">
+  <!-- <button *ngIf="isUpdateMode() && defaults.orderStatusId !== 5 && defaults.orderStatusId !== 3 && defaults.orderStatusId !== 6" 
+    color="primary" mat-flat-button (click)="createBackOrder()" [disabled]="this.selection.selected.length === 0">Back Order</button>
+  <button *ngIf="isUpdateMode() && defaults.orderStatusId !== 5 && defaults.orderStatusId !== 3 && defaults.orderStatusId !== 6" 
+    color="primary" mat-flat-button (click)="creditMemo()" [disabled]="this.selection.selected.length === 0">Credit Memo</button> -->
+  <button mat-button type="button" (click)="cancel()">Cancel</button>
+  <!-- <button *ngIf="isCreateMode()" color="primary" mat-flat-button (click)="save('Quote')">Create Quote</button> -->
+  <button *ngIf="isCreateMode()" color="primary" mat-flat-button (click)="save('Quote')">Create Order</button>
+  <button *ngIf="isUpdateMode() && defaults.isQuote" color="primary" mat-flat-button (click)="save('Quote')">Update Order</button>
+  <!-- <button *ngIf="isUpdateMode() && defaults.isQuote === true" color="primary" mat-flat-button (click)="save('Quote')">Update Quote</button>
+  <button *ngIf="isUpdateMode() && defaults.isQuote === true" color="primary" mat-flat-button (click)="save('Convert')">Convert To Order</button> -->
+</mat-dialog-actions>

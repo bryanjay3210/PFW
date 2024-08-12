@@ -1,0 +1,71 @@
+<vex-page-layout>
+  <vex-page-layout-content>
+    <div>
+      <div class="bg-app-bar px-6 h-16 border-b sticky left-0 flex items-center">
+        <h2 class="title my-0 ltr:pr-4 rtl:pl-4 ltr:mr-4 rtl:ml-4 ltr:border-r rtl:border-l hidden sm:block flex-none">
+          <span>Locations</span>
+          <span *ngIf="selection.hasValue()">{{ selection.selected.length }}
+            Location<span *ngIf="selection.selected.length > 1">s</span> selected</span>
+        </h2>
+        <div
+          class="bg-foreground rounded-full border px-4 max-w-[300px] flex-auto flex items-center border border-gray-300">
+          <mat-icon class="icon-sm text-secondary" svgIcon="mat:search"></mat-icon>
+          <input [formControl]="searchCtrl" class="px-4 py-2 border-0 outline-none w-full bg-transparent"
+            placeholder="Search..." type="search">
+        </div>
+        <span class="flex-1"></span>
+        <button [matMenuTriggerFor]="columnFilterMenu" class="ml-4 flex-none" mat-icon-button
+          matTooltip="Filter Columns" type="button">
+          <mat-icon svgIcon="mat:filter_list"></mat-icon>
+        </button>
+        <button class="text-secondary" mat-dialog-close mat-icon-button type="button">
+          <mat-icon svgIcon="mat:close"></mat-icon>
+        </button>
+      </div>
+      <table @stagger [dataSource]="dataSource" class="w-full" mat-table matSort>
+
+        <!-- Text Columns -->
+        <ng-container *ngFor="let column of columns; trackBy: trackByProperty">
+          <ng-container *ngIf="column.type === 'text'" [matColumnDef]="column.property">
+            <th *matHeaderCellDef class="uppercase" mat-header-cell mat-sort-header> {{ column.label }}</th>
+            <td *matCellDef="let row" [ngClass]="column.cssClasses" mat-cell>
+              <ng-container>{{ row[column.property] }} </ng-container>
+            </td>
+          </ng-container>
+        </ng-container>
+
+        <!-- Action Column -->
+        <ng-container matColumnDef="actions">
+          <th *matHeaderCellDef mat-header-cell mat-sort-header></th>
+          <td *matCellDef="let row" class="w-10 text-secondary" mat-cell>
+            <button *ngIf="access === userPermission.FullAccess" (click)="$event.stopPropagation()"
+              [matMenuTriggerData]="{ location: row }" [matMenuTriggerFor]="actionsMenu" mat-icon-button type="button">
+              <mat-icon svgIcon="mat:more_horiz"></mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr *matHeaderRowDef="visibleColumns" mat-header-row></tr>
+        <tr (click)="selectLocation(row)" *matRowDef="let row; columns: visibleColumns;" @fadeInUp
+          class="hover:bg-hover trans-ease-out cursor-pointer" mat-row></tr>
+      </table>
+      <mat-paginator [pageSizeOptions]="pageSizeOptions" [pageSize]="pageSize" class="sticky left-0"></mat-paginator>
+    </div>
+  </vex-page-layout-content>
+</vex-page-layout>
+<mat-menu #columnFilterMenu="matMenu" xPosition="before" yPosition="below">
+  <button (click)="toggleColumnVisibility(column, $event)" *ngFor="let column of columns"
+    class="checkbox-item mat-menu-item">
+    <mat-checkbox (click)="$event.stopPropagation()" [(ngModel)]="column.visible" color="primary">
+      {{ column.label }}
+    </mat-checkbox>
+  </button>
+</mat-menu>
+<mat-menu #actionsMenu="matMenu" xPosition="before" yPosition="below">
+  <ng-template let-location="location" matMenuContent>
+    <button (click)="selectLocation(location)" mat-menu-item>
+      <mat-icon svgIcon="mat:Select"></mat-icon>
+      <span>Select</span>
+    </button>
+  </ng-template>
+</mat-menu>

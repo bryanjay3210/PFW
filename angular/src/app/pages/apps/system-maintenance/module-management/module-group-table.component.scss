@@ -1,0 +1,54 @@
+.dialog-container {
+    width: 100%;
+    padding: 0 !important;
+    flex-direction: column !important;
+
+    .form {
+        flex-direction: column !important;
+        width: 100%;
+    }
+  
+    .dialog-header {
+        width: 100%;
+        border-bottom: 1px dashed lightgray;
+        padding: 5px 10px 5px 10px;
+    }
+    
+    .body {
+      width: 100%;
+      min-height: 68vh;
+      font-size: 12px;
+      padding: 0 15px;
+    }
+
+  
+    .footer {
+        width: 100% !important;
+        padding: 10px;
+    }
+  
+}
+
+.modules-container .mat-form-field{
+    margin-top: 1%;
+    margin-bottom: 1%;
+    margin-left: 8px;
+    width: 210px;
+  }
+  
+
+::ng-deep.mat-form-field-appearance-outline .mat-form-field-wrapper {
+    padding-bottom: 0 !important;
+}
+
+::ng-deep.role-modal {
+    .mat-expansion-panel-content {
+        padding: 4px 27px !important;
+    }
+}
+
+.role-modal {
+    .mat-expansion-panel-content {
+        padding: 4px 27px !important;
+    }
+}

@@ -1,0 +1,16 @@
+#footer {
+    position:fixed;
+    left: 260px;
+    //right:0px;
+    bottom: 120px;
+    width: 78%;
+    height: 50px;
+    background-color: white;
+  }
+  #footernext,
+  #footerback {
+    text-align: center;        
+    width: auto;
+    float: right;
+    // border: 1px solid black;      
+  }

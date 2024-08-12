@@ -1,0 +1,69 @@
+<div id="section-table">
+  <vex-page-layout>
+    <vex-page-layout-header class="pb-16 flex flex-col items-start justify-center">
+      <div [class.container]="layoutCtrl.value === 'boxed'" [class.px-gutter]="layoutCtrl.value === 'fullwidth'"
+        class="w-full flex flex-col sm:flex-row justify-between">
+        <div>
+          <h1 class="title mt-0 mb-1">Stock Settings</h1>
+          <vex-breadcrumbs [crumbs]="['Menu Tab Module', 'Warehouse Management',  'Stock Settings']"></vex-breadcrumbs>
+        </div>
+      </div>
+    </vex-page-layout-header>
+
+    <vex-page-layout-content [class.container]="layoutCtrl.value === 'boxed'" [class.px-gutter]="layoutCtrl.value === 'fullwidth'" class="-mt-6">
+      <div class="card overflow-auto -mt-16"  style="height: 160px;">
+        <div class="bg-app-bar px-6 h-16 border-b sticky left-0 flex items-center">
+          <h2
+            class="title my-0 ltr:pr-4 rtl:pl-4 ltr:mr-4 rtl:ml-4 ltr:border-r rtl:border-l hidden sm:block flex-none">
+            <span>Stock Settings</span>
+          </h2>
+          <span class="flex-1"></span>
+          <button *ngIf="access === userPermission.FullAccess" (click)="saveStockSettings()" class="ml-4 flex-none"
+            color="primary" mat-mini-fab matTooltip="Save Stock Settings" type="button">
+            <mat-icon svgIcon="mat:save"></mat-icon>
+          </button>
+        </div>
+        <div class="flex-parent">
+          <div class="flex-child-left-large">
+            <div class="flex flex-col sm:flex-row">
+              <div class="flex-auto" style="margin-left: 20px; width: 800px;">CA Customer</div>
+              <div class="flex-auto">
+                <mat-slide-toggle color="primary" labelPosition="after" (change)="setCACAProduct($event)" [checked]="stockSettings.isCaliforniaCAProduct">CA Product</mat-slide-toggle>
+              </div>
+              <div class="sm:ml-6 flex-auto">
+                <mat-slide-toggle color="primary" labelPosition="after" (change)="setCANVProduct($event)" [checked]="stockSettings.isCaliforniaNVProduct">NV Product</mat-slide-toggle>
+              </div>
+            </div>
+          </div>
+        </div>
+        <mat-divider class="-mx-6 text-border" style="margin-right: 0px;"></mat-divider>
+        <div class="flex-parent">
+          <div class="flex-child-left-large">
+            <div class="flex flex-col sm:flex-row">
+              <div class="flex-auto" style="margin-left: 20px; width: 800px;">NV Customer</div>
+              <div class="flex-auto">
+                <mat-slide-toggle color="primary" labelPosition="after" (change)="setNVCAProduct($event)" [checked]="stockSettings.isNevadaCAProduct">CA Product</mat-slide-toggle>
+              </div>
+              <div class="sm:ml-6 flex-auto">
+                <mat-slide-toggle color="primary" labelPosition="after" (change)="setNVNVProduct($event)" [checked]="stockSettings.isNevadaNVProduct">NV Product</mat-slide-toggle>
+              </div>
+            </div>
+          </div>
+        </div>
+        <mat-divider class="-mx-6 text-border" style="margin-right: 0px;"></mat-divider>
+        <div class="flex-parent">
+          <div class="flex-child-left-large">
+            <div class="flex flex-col sm:flex-row">
+              <div class="flex-auto" style="margin-left: 20px; width: 800px;">Drop Ship Customer</div>
+              <div class="flex-auto">
+                <mat-slide-toggle color="primary" labelPosition="after" (change)="setDSCAProduct($event)" [checked]="stockSettings.isDropShipCAProduct">CA Product</mat-slide-toggle>
+              </div>
+              <div class="sm:ml-6 flex-auto">
+                <mat-slide-toggle color="primary" labelPosition="after" (change)="setDSNVProduct($event)" [checked]="stockSettings.isDropShipNVProduct">NV Product</mat-slide-toggle>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </vex-page-layout-content>
+  </vex-page-layout>

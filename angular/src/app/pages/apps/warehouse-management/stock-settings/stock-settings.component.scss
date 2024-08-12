@@ -1,0 +1,211 @@
+.flex-parent {
+    display: flex;
+    width: 100%;
+    // border: 1px solid red;
+  }
+  
+  .flex-child-left {
+    flex: 1;
+    text-align: left;
+    font-size: large;
+    white-space: nowrap;
+  }
+
+  .flex-child-left-border {
+    flex: 1;
+    text-align: left;
+    font-size: medium;
+    //white-space: nowrap;
+    border: .5px solid black;
+  }
+
+  .flex-child-center-border {
+    flex: 1;
+    text-align: center;
+    font-size: medium;
+    //white-space: nowrap;
+    border: 1px solid black;
+  }
+
+  .flex-child-center-border-small {
+    flex: none;
+    text-align: center;
+    font-size: medium;
+    //white-space: nowrap;
+    border: 1px solid black;
+    width: 40px !important;
+  }
+
+  .flex-child-left-border-big {
+    flex: none;
+    text-align: left;
+    font-size: medium;
+    //white-space: nowrap;
+    border: 1px solid black;
+    width: 200px !important;
+  }
+
+  .flex-child-center-border-semi {
+    flex: none;
+    text-align: center;
+    font-size: medium;
+    // white-space: nowrap;
+    border: 1px solid black;
+    width: 150px !important;
+  }
+  
+  .flex-child-center-border-mid {
+    flex: none;
+    text-align: center;
+    font-size: medium;
+    // white-space: nowrap;
+    border: 1px solid black;
+    width: 100px !important;
+  }
+  .flex-child-center-border-big {
+    flex: none;
+    text-align: center;
+    font-size: medium;
+    // white-space: nowrap;
+    border: 1px solid black;
+    width: 200px !important;
+  }
+
+  .flex-child-right-border {
+    flex: 1;
+    text-align: right;
+    font-size: medium;
+    //white-space: nowrap;
+    border: 1px solid black;
+  }
+
+  .flex-child-left-title {
+    flex: 1;
+    text-align: left;
+    font-size: x-large;
+    font-weight: bold;
+  }
+
+  .flex-child-left-small {
+    flex: 1;
+    text-align: left;
+    font-size: small;
+    white-space: nowrap;
+    // overflow: hidden;
+    // text-overflow: ellipsis;
+    // word-wrap: break-word;
+  }
+
+  .flex-child-left-xxsmall {
+    flex: 1;
+    text-align: left;
+    font-size: xx-small;
+  }
+
+  .flex-child-left-large {
+    flex: 1;
+    text-align: left;
+    font-size: large;
+  }
+  
+  .flex-child-center {
+    flex: 1;
+    // border: 1px solid green;
+    //margin: 3px;
+    text-align: center;
+    //font-size: large;
+  }
+
+  .flex-child-center-small {
+    flex: 1;
+    // border: 1px solid green;
+    //margin: 3px;
+    text-align: center;
+    font-size: small;
+  }
+
+  .flex-child-center-medium {
+    flex: 1;
+    // border: 1px solid green;
+    //margin: 3px;
+    text-align: center;
+    font-size: medium;
+  }
+  
+  .flex-child-right {
+    flex: 1;
+    // border: 1px solid violet;
+    //margin: 3px;
+    text-align: right;
+    //font-size: large;
+  }
+  
+  //---------------------------------------------------------------------------------------------------------------------------------------
+  
+  #section-print {
+    display: none;
+  }
+  
+  #page {
+    margin-top: 20px;
+    page-break-after: always;
+  }
+  
+  /* print styles */
+  @media print {
+    @page {
+      size: auto;
+      size: 8.5in 11in;
+      //size: 11in 8.5in;
+      width: 8.5in;
+      height: 11in;
+      margin-left: 8mm;
+      margin-right: 8mm;
+      margin-top: 8mm;
+      margin-bottom: 8mm;
+    }
+  
+    body {
+      font-family: Tahoma;
+      font-size: medium;
+    }
+  
+    .flex-divider {
+      display: flex;
+      width: 100%;
+      vertical-align: top;
+      // vertical-align: top;
+      //height: 0mm;
+      // border: .01mm solid red;
+      margin-top: -5mm;
+    }
+  
+    * {
+      overflow: visible !important;
+    }
+  
+    .page {
+      page-break-after: always;
+    }
+  
+    #section-print {
+      display: block;
+      left: 0;
+      top: 0;
+    }
+  
+    #section-table {
+      display: none;
+    }
+  }
+  
+  #page-number {
+    display: table-footer-group;
+  }
+  
+  #page-number:after {
+    font-family: Tahoma;
+    font-size: medium;
+    counter-increment: page;
+    content: "Page " counter(page) " of " counter(totalPages);
+  }

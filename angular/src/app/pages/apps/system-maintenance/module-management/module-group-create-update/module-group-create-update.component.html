@@ -1,0 +1,57 @@
+<form (ngSubmit)="save()" [formGroup]="form">
+  <div class="flex items-center" mat-dialog-title>
+    <img [src]="imageDefault" class="avatar-sq mr-5">
+    <h2 *ngIf="form.get('name').value" class="headline m-0 flex-auto">{{ form.get('name').value }} Module Group</h2>
+    <h2 *ngIf="!form.get('name').value" class="headline m-0 flex-auto">New Module Group</h2>
+    <button [matMenuTriggerFor]="settingsMenu" class="text-secondary" mat-icon-button type="button">
+      <mat-icon svgIcon="mat:more_vert"></mat-icon>
+    </button>
+    <button class="text-secondary" mat-dialog-close mat-icon-button type="button">
+      <mat-icon svgIcon="mat:close"></mat-icon>
+    </button>
+  </div>
+
+  <mat-divider class="-mx-6 text-border"></mat-divider>
+
+  <mat-dialog-content class="flex flex-col">
+    <div class="flex flex-col sm:flex-row">
+      <mat-form-field class="mt-6 flex-auto">
+        <mat-label>Module Group Name</mat-label>
+        <input cdkFocusInitial formControlName="name" matInput required>
+      </mat-form-field>
+      <mat-form-field class="sm:mt-6 sm:ml-6 flex-auto">
+        <mat-label>Code</mat-label>
+        <input formControlName="code" matInput required>
+      </mat-form-field>
+    </div>
+    <mat-form-field class="flex-auto">
+      <mat-label>Description</mat-label>
+      <input formControlName="description" matInput>
+    </mat-form-field>
+  </mat-dialog-content>
+
+  <vex-module-table [moduleGroup]="defaults"></vex-module-table>
+  
+  <mat-dialog-actions *ngIf="access === userPermission.FullAccess"  align="end">
+    <button mat-button mat-dialog-close type="button">Cancel</button>
+    <button *ngIf="isCreateMode()" color="primary" mat-flat-button (click)="save()">Create Module Group</button>
+    <button *ngIf="isUpdateMode()" color="primary" mat-flat-button (click)="save()">Update Module Group</button>
+  </mat-dialog-actions>
+</form>
+
+<mat-menu #settingsMenu="matMenu" xPosition="before" yPosition="below">
+  <button mat-menu-item>
+    <mat-icon svgIcon="mat:print"></mat-icon>
+    <span>Print</span>
+  </button>
+
+  <button mat-menu-item>
+    <mat-icon svgIcon="mat:download"></mat-icon>
+    <span>Export</span>
+  </button>
+
+  <button mat-menu-item>
+    <mat-icon svgIcon="mat:delete"></mat-icon>
+    <span>Delete</span>
+  </button>
+</mat-menu>

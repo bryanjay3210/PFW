@@ -1,0 +1,80 @@
+<div>
+  <form>
+    <div class="bg-app-bar px-6 h-16 border-b sticky left-0 flex items-center">
+      <h2 class="headline m-0 flex-auto">Input/Select Vendor</h2>
+      <button class="text-secondary" mat-dialog-close mat-icon-button type="button">
+        <mat-icon svgIcon="mat:close"></mat-icon>
+      </button>
+    </div>
+    <div class="bg-app-bar px-6 h-16 border-b sticky left-0 flex items-center">
+      <mat-form-field *ngIf="filteredVendors$" class="sm:mt-6 sm:ml-6 flex-auto" style="width: 200px;">
+        <mat-label>Vendor Code</mat-label>
+        <input #inputVendor  #inputVd="matAutocompleteTrigger"
+          matInput 
+          [formControl]="vendorCodeCtrl" 
+          [matAutocomplete]="autoVendor" 
+          (keydown.enter)="inputVd.closePanel(); onCodeEnter($event.target)">
+        <mat-autocomplete #autoVendor="matAutocomplete" (optionSelected)="onVendorSelectionChange($event.option.value)">
+          <mat-option *ngFor="let vendor of filteredVendors$ | async" [value]="vendor.vendorCode">
+            <span class="body-1">{{ vendor.vendorCode }} </span>
+          </mat-option>
+        </mat-autocomplete>
+        <button (click)="resetVendorControl()" *ngIf="vendorCodeCtrl.value" mat-icon-button matSuffix type="button">
+          <mat-icon svgIcon="mat:close"></mat-icon>
+        </button>
+        <button *ngIf="!vendorCodeCtrl.value" mat-icon-button matSuffix type="button">
+          <mat-icon svgIcon="mat:arrow_drop_down"></mat-icon>
+        </button>
+      </mat-form-field>
+      <mat-form-field class="flex-auto">
+        <mat-label>Vendor Part Number</mat-label>
+        <input [formControl]="vendorPartNumberCtrl" matInput value={{defaults.mainPartsLinkNumber}}>
+      </mat-form-field>
+      <mat-form-field class="flex-auto">
+        <mat-label>Price</mat-label>
+        <input [formControl]="vendorPriceCtrl" matInput  type="number" min="0">
+      </mat-form-field>
+      <mat-form-field class="flex-auto">
+        <mat-label>Quantity</mat-label>
+        <input [formControl]="vendorQuantityCtrl" matInput type="number" min="1">
+      </mat-form-field>
+      <button *ngIf="access === userPermission.FullAccess" (click)="setManualVendor()" class="ml-4 flex-none" color="primary"
+        mat-mini-fab matTooltip="Add Vendor" type="button">
+        <mat-icon svgIcon="mat:add"></mat-icon>
+      </button>
+    </div>
+  </form>
+  <table @stagger [dataSource]="dataSource" class="w-full" mat-table matSort (matSortChange)="sortDataMatTable($event)">
+    <!-- Text Columns -->
+    <ng-container *ngFor="let column of columns">
+      <ng-container *ngIf="column.type === 'text'" [matColumnDef]="column.property">
+        <th *matHeaderCellDef class="uppercase" mat-header-cell mat-sort-header> {{ column.label }}</th>
+          <div *ngIf="column.property === 'cutoffTime'; else notCutoff">
+            <td *matCellDef="let row" mat-cell>
+              <ng-container><span style="float: left;">{{ formatTime(row[column.property]) }}</span></ng-container>
+            </td>
+          </div>
+          <ng-template #notCutoff>
+            <td *matCellDef="let row" mat-cell>
+              <ng-container><span style="float: left;">{{ row[column.property] }}</span></ng-container>
+            </td>
+          </ng-template>
+          
+      </ng-container>
+    </ng-container>
+
+    <!-- Action Column -->
+    <ng-container matColumnDef="actions" style="width: 25px;">
+      <th *matHeaderCellDef mat-header-cell mat-sort-header style="width: 25px;">ACTION</th>
+      <td *matCellDef="let row" mat-cell style="width: 25px;" align="center">
+        <button *ngIf="access === userPermission.FullAccess" (click)="rowClicked(row)">
+          <mat-icon svgIcon="mat:trending_flat" matTooltip="Select Vendor"></mat-icon>
+        </button>
+      </td>
+    </ng-container>
+
+    <tr *matHeaderRowDef="visibleColumns" mat-header-row></tr>
+    <tr *matRowDef="let row; columns: visibleColumns;" @fadeInUp class="hover:bg-hover trans-ease-out cursor-pointer"
+      [ngClass]="row.isActive === false ? 'inactiveRow' : ''" mat-row></tr>
+  </table>
+</div>

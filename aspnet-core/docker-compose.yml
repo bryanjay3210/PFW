@@ -1,0 +1,9 @@
+#version: "2.6.1"  # optional since v1.27.0
+services:
+
+   PFW-API:
+     build:
+        context: ./
+     image: pfw-api
+     ports:
+        - "50001:50001" 
