@@ -1,38 +1,153 @@
-.topcorner{
-  position:absolute;
-  top:0;
-  right:0;
- }
+@import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+.landing-page {
+  font-family: Arial, sans-serif;
+  color: #333;
+  height: 100vh;
+  overflow-y: scroll;
 
- .flex-parent {
-  display: flex;
-  width: 100%;
-  //background-color: aquamarine;
-}
+  .section {
+    padding: 2rem;
+    text-align: center;
 
-.flex-parent-base {
-  display: flex;
-  width: 90%;
-  // height: 50%;
-  //background-color: bisque;
-}
+    &:nth-of-type(odd) {
+      background-color: #f4f4f4;
+    }
 
-.flex-child-left {
-  flex: 1;
-  text-align: left;
-  font-size: 35px;
-  //font-weight: bold;
-}
+    h2 {
+      margin-top: 0;
+    }
 
-.flex-child-center {
-  flex: 1;
-  text-align: center;
-  font-size: 35px;
-  //font-weight: bold;
-}
+    p {
+      font-size: 1.2rem;
+      line-height: 1.6;
+    }
+  }
 
-.flex-child-right {
-  flex: 1;
-  text-align: right;
-  font-size: large;
+  #location {
+    background: linear-gradient(#030303, #4b0000);
+    color: white;
+  }
+
+  #last {
+    background: linear-gradient(0.25turn, #000000, #3d0b0b);
+    color: #ffffff;
+  }
+  #product {
+    background: url(../../../../assets/img/Vector.png) no-repeat left center;
+    height: 60%;
+  }
+
+  .home {
+    position: relative;
+    background: url("../../../../assets/img/banner.png") no-repeat center center;
+    background-size: cover;
+    color: white;
+    height: 100vh;
+    padding: 2rem 1rem;
+    text-align: center;
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.4);
+      z-index: 1;
+    }
+
+    .header {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+
+      .header-under-home {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        padding-left: 20px;
+        padding-right: 20px;
+
+        .header-buttons {
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          gap: 20px;
+        }
+      }
+
+      h1 {
+        margin: 0;
+      }
+    }
+
+    .home-content {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 2;
+      text-align: center;
+      color: white;
+      font-size: 2rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+    }
+  }
+
+  .signin-btn {
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 500;
+    font-family: "Poppins";
+    line-height: 24px;
+    background: none;
+    border: none;
+    cursor: pointer;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .signup-btn {
+    width: 125px;
+    height: 43px;
+    border-radius: 8px;
+    background-color: #b11f23;
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 500;
+    font-family: "Poppins";
+    line-height: 24px;
+    border: none;
+    cursor: pointer;
+  }
+
+  .footer {
+    color: rgb(65, 65, 65);
+    text-align: center;
+    padding: 1rem;
+    position: relative;
+    bottom: 0;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  @media (max-width: 768px) {
+    .header-under-home {
+      flex-direction: column;
+    }
+
+    .header-buttons {
+      flex-direction: column;
+      gap: 10px;
+    }
+  }
 }

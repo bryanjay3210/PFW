@@ -38,9 +38,12 @@
             "styles": [
               "src/styles.scss",
               "src/@vex/styles/tailwind.scss",
-              "node_modules/sweetalert2/src/sweetalert2.scss"
+              "node_modules/sweetalert2/src/sweetalert2.scss",
+              "node_modules/bootstrap/dist/css/bootstrap.min.css"
             ],
-            "scripts": [],
+            "scripts": [
+              "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"
+            ],
             "allowedCommonJsDependencies": [
               "simplebar",
               "highlight.js",
@@ -110,13 +113,8 @@
             "polyfills": "src/polyfills.ts",
             "tsConfig": "tsconfig.spec.json",
             "karmaConfig": "karma.conf.js",
-            "assets": [
-              "src/pfwicon.ico",
-              "src/assets"
-            ],
-            "styles": [
-              "src/styles.scss"
-            ],
+            "assets": ["src/pfwicon.ico", "src/assets"],
+            "styles": ["src/styles.scss"],
             "scripts": []
           }
         },

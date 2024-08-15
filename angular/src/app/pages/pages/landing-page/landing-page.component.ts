@@ -102,4 +102,12 @@ export class LandingPageComponent implements OnInit {
     this.isRegister = true;
     this.isLogin = false;
   }
+
+  navigateToLogin() {
+    this.router.navigate(['/login']);
+  }
+
+  navigateToRegister() {
+    this.router.navigate(['/register']);
+  }
 }
